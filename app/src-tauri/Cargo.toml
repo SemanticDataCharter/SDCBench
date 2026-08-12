@@ -1,0 +1,30 @@
+[package]
+name = "sdcbench"
+version = "4.0.0-beta.1"
+description = "SDCBench — the personal bench to SDCStudio"
+authors = ["Axius SDC, Inc."]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "sdcbench_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = "2"
+
+# OS keychain for the SDCStudio API token (D3) — platform-native backends.
+[target.'cfg(target_os = "linux")'.dependencies]
+keyring = { version = "3", features = ["sync-secret-service", "crypto-rust"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3", features = ["apple-native"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }

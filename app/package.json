@@ -1,0 +1,25 @@
+{
+  "name": "sdcbench-app",
+  "private": true,
+  "version": "4.0.0-beta.1",
+  "type": "module",
+  "description": "SDCBench — the personal bench to SDCStudio (Tauri shell + Vite frontend)",
+  "scripts": {
+    "copy-media": "node scripts/copy-blockly-media.mjs",
+    "predev": "npm run copy-media",
+    "dev": "vite",
+    "prebuild": "npm run copy-media",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "dist": "tauri build && bash scripts/copy-appimage.sh"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "blockly": "^13.2.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "vite": "^8.1.0"
+  }
+}

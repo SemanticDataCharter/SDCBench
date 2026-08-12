@@ -1,0 +1,139 @@
+:root {
+  --bg: #0f1115; --panel: #171a21; --ink: #e6e9ef; --muted: #9aa4b2;
+  --accent: #4f8cff; --line: #262a33; --ok: #8ff0b0; --okbg: #13351f;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); display: flex; flex-direction: column;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+header {
+  display: flex; align-items: center; gap: 10px; flex: 0 0 auto;
+  padding: 10px 16px; border-bottom: 1px solid var(--line);
+}
+header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+.badge { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+.badge.ok { color: var(--ok); background: var(--okbg); border-color: transparent; }
+.grow { flex: 1 1 auto; }
+.session { display: flex; align-items: center; gap: 8px; }
+.session label { font-size: 12px; }
+
+/* Workspace: canvas fills the space, a thin panel rides the right edge. */
+#workspace { flex: 1 1 auto; display: flex; min-height: 0; }
+#blocklyDiv { flex: 1 1 auto; min-width: 0; height: 100%; }
+#panel {
+  flex: 0 0 340px; width: 340px; background: var(--panel);
+  border-left: 1px solid var(--line); padding: 14px; overflow: auto;
+}
+.panel-block { margin-bottom: 20px; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+.muted { color: var(--muted); font-size: 13px; }
+.warn { color: #ffcf8c; }
+.ok { color: var(--ok); }
+
+input[type=text], input[type=password], select, textarea {
+  background: #0b0d11; color: var(--ink); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 10px; font-size: 14px; font-family: inherit; width: 100%;
+}
+textarea { resize: vertical; }
+.field { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+.field label { font-size: 12px; }
+.panel-block select { width: 100%; }
+.row2 { display: flex; gap: 8px; align-items: center; }
+.row2 button { flex: 1; }
+.row2 select { flex: 1 1 auto; width: auto; min-width: 0; }
+#loadbtn { flex: 0 0 auto; }
+/* WebKitGTK renders <select> natively and ignores the dark background; force
+   custom rendering so the value and list are readable. */
+select {
+  -webkit-appearance: none; appearance: none; width: auto; padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa4b2' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+select option { background-color: #0b0d11; color: var(--ink); }
+a { color: var(--accent); cursor: pointer; }
+button {
+  background: var(--accent); color: #fff; border: 0; border-radius: 6px;
+  padding: 8px 14px; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+button:disabled { opacity: 0.5; cursor: default; }
+
+/* Search results: blocks wearing the data-type badge (the face they carry onto
+   the canvas when reuse-drag lands). */
+.blocks { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.block {
+  display: flex; align-items: center; gap: 8px;
+  background: #0b0d11; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+}
+.block .chip {
+  flex: none; font-size: 11px; color: var(--accent);
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px;
+  background: var(--panel); white-space: nowrap;
+}
+.block .block-label { font-weight: 600; font-size: 13px; }
+.block .block-meta { margin-left: auto; font-size: 11px; }
+
+.cv-preview { margin-top: 6px; }
+.cv-preview pre {
+  background: #0b0d11; border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px; font-size: 12px; line-height: 1.45; overflow: auto; max-height: 40vh; margin: 6px 0 0;
+}
+
+/* Login gate: a modal over the canvas until a key is stored. */
+#gate {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(7, 9, 13, 0.82); z-index: 50;
+}
+#gate.hidden { display: none; }
+
+/* Cost-confirmation overlay before sending to SDCStudio. */
+#confirm {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(7, 9, 13, 0.82); z-index: 70; padding: 24px;
+}
+#confirm.hidden { display: none; }
+.confirm-card {
+  width: 420px; max-width: 92vw; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 12px; padding: 22px;
+}
+.confirm-card h2 { text-transform: none; letter-spacing: 0; font-size: 17px; color: var(--ink); margin: 0 0 10px; }
+.confirm-card p { margin: 8px 0; font-size: 14px; color: var(--ink); }
+.confirm-card p.muted { font-size: 13px; }
+.confirm-card b { color: var(--ok); }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* Help overlay: the bundled user guide. */
+#help {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(7, 9, 13, 0.82); z-index: 60; padding: 24px;
+}
+#help.hidden { display: none; }
+.help-card {
+  width: 720px; max-width: 94vw; max-height: 88vh; display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+}
+.help-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--line);
+}
+.help-head h2 { margin: 0; text-transform: none; letter-spacing: 0; font-size: 16px; color: var(--ink); }
+.help-body { padding: 8px 24px 24px; overflow: auto; line-height: 1.55; }
+.help-body h1 { font-size: 20px; margin: 18px 0 6px; }
+.help-body h2 { font-size: 16px; margin: 20px 0 6px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.help-body h3 { font-size: 14px; margin: 14px 0 4px; color: var(--ink); }
+.help-body p { margin: 8px 0; font-size: 14px; color: var(--ink); }
+.help-body ul { margin: 8px 0; padding-left: 22px; }
+.help-body li { margin: 4px 0; font-size: 14px; }
+.help-body code { background: #0b0d11; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+.help-body strong { color: var(--ink); }
+.gate-card {
+  width: 440px; max-width: 92vw; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 12px; padding: 24px;
+}
+.gate-card h2 { text-transform: none; letter-spacing: 0; font-size: 18px; color: var(--ink); margin: 0 0 8px; }
+.gate-card p { margin: 10px 0 0; }
+.gate-row { display: flex; gap: 8px; margin: 14px 0 4px; }
+.gate-row input { flex: 1; }

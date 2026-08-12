@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SDCBench</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <header>
+    <h1>SDCBench</h1>
+    <span id="health" class="badge">checking…</span>
+    <div class="grow"></div>
+    <button id="helpbtn" class="ghost">Help</button>
+    <div id="session" class="session" hidden>
+      <span id="whoami" class="muted"></span>
+      <label for="projects" class="muted">Building in</label>
+      <select id="projects"></select>
+      <button id="signout" class="ghost">Sign out</button>
+    </div>
+  </header>
+
+  <div id="workspace">
+    <div id="blocklyDiv"></div>
+    <aside id="panel">
+      <section class="panel-block">
+        <h2>Reuse · Find components</h2>
+        <div class="field">
+          <label for="searchproject" class="muted">Search in</label>
+          <select id="searchproject"></select>
+        </div>
+        <input id="libsearch" type="text" placeholder="Search published components…" />
+        <p id="libmsg" class="muted"></p>
+        <p class="muted">Matches appear in the <b>Reuse</b> tab on the canvas — drag them in to reuse a published component.</p>
+      </section>
+
+      <section id="reqeditor" class="panel-block" hidden>
+        <h2>Requirement · <span id="reqfor"></span></h2>
+        <textarea id="reqtext" rows="4" placeholder="What is this — units, normal/expected values, and any guideline (e.g. 'systolic BP in mmHg, adult normal <120, per ACC/AHA 2017'). This is handed to whoever finalizes it in SDCStudio."></textarea>
+        <p class="muted">Select a new component on the canvas to describe it.</p>
+      </section>
+      <section class="panel-block">
+        <h2>Your model</h2>
+        <p id="cvstatus" class="muted"></p>
+        <div class="field">
+          <label for="dmdesc" class="muted">Model description</label>
+          <textarea id="dmdesc" rows="2" placeholder="What this model captures — used when it's finalized in SDCStudio."></textarea>
+        </div>
+        <div class="row2">
+          <select id="loadselect"><option value="">Saved drafts…</option></select>
+          <button id="loadbtn" class="ghost">Load</button>
+        </div>
+        <div class="row2">
+          <button id="savebtn" class="ghost">Save draft locally</button>
+          <button id="createbtn">Send to SDCStudio</button>
+        </div>
+        <p id="createstatus" class="muted"></p>
+        <details class="cv-preview">
+          <summary class="muted">Structure</summary>
+          <pre id="cvout"></pre>
+        </details>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Login gate: shown over the canvas until signed in. API key only. -->
+  <div id="gate">
+    <div class="gate-card">
+      <h2>Sign in to SDCStudio</h2>
+      <p class="muted">SDCBench builds into your SDCStudio account. Sign in with your API key — it is stored in your OS keychain and never leaves this machine. You stay signed in until you sign out.</p>
+      <div class="gate-row">
+        <input id="apikey" type="password" placeholder="SDCStudio API key" />
+        <button id="usekey">Sign in</button>
+      </div>
+      <p class="muted">No account yet? <a id="signuplink" href="#">Create an SDCStudio account →</a> Then copy your API key from Account Settings.</p>
+      <p id="gatemsg" class="muted"></p>
+    </div>
+  </div>
+
+  <!-- Cost confirmation before sending (minting) to SDCStudio -->
+  <div id="confirm" class="hidden">
+    <div class="confirm-card">
+      <h2>Send to SDCStudio</h2>
+      <p>This creates a draft data model in your project. You will be charged <b id="confirmcost"></b>.</p>
+      <p id="confirmdetail" class="muted"></p>
+      <p id="confirmwarn" class="muted warn" hidden></p>
+      <div class="confirm-actions">
+        <button id="confirmcancel" class="ghost">Cancel</button>
+        <button id="confirmaccept">Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help: the user guide, rendered from docs/USER-GUIDE.md -->
+  <div id="help" class="hidden">
+    <div class="help-card">
+      <div class="help-head">
+        <h2>SDCBench Help</h2>
+        <button id="helpclose" class="ghost">Close</button>
+      </div>
+      <div id="helpbody" class="help-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

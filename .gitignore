@@ -1,0 +1,41 @@
+# Secrets — never commit API keys, tokens, or LLM credentials
+.env
+.env.*
+*.key
+*.pem
+secrets/
+keychain/
+
+
+# Node / UI
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Tauri / Rust
+shell/target/
+target/
+
+# Python sidecar
+__pycache__/
+*.pyc
+.venv/
+venv/
+build/
+*.spec
+
+# Packaging output
+packaging/out/
+*.AppImage
+*.dmg
+*.msi
+*.exe
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# stray run outputs (app writes analyzed CSVs here); keep fixtures in tests/fixtures/
+docs/test_data/
