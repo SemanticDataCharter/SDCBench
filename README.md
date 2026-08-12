@@ -51,8 +51,9 @@ npx tauri build    # build a release bundle (Linux AppImage)
 - **Windows:** see [`docs/BUILDING-WINDOWS.md`](docs/BUILDING-WINDOWS.md).
 - macOS is not yet supported.
 
-CI (GitHub Actions) builds the Linux AppImage and a signed Windows installer on
-tags; see [`docs/CI-SIGNING.md`](docs/CI-SIGNING.md).
+CI (GitHub Actions) builds the Linux AppImage and a Windows installer on tags.
+Beta installers are not yet code-signed; Windows code signing is wired into CI and
+turns on once configured. See [`docs/CI-SIGNING.md`](docs/CI-SIGNING.md).
 
 ## Documentation
 
