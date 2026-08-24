@@ -52,8 +52,37 @@ npx tauri build    # build a release bundle (Linux AppImage)
 - macOS is not yet supported.
 
 CI (GitHub Actions) builds the Linux AppImage and a Windows installer on tags.
-Beta installers are not yet code-signed; Windows code signing is wired into CI and
-turns on once configured. See [`docs/CI-SIGNING.md`](docs/CI-SIGNING.md).
+See [`docs/CI-SIGNING.md`](docs/CI-SIGNING.md) for Windows code signing.
+
+### Releasing
+
+**Two steps, and merging alone ships nothing.** `build.yml` triggers on a
+**tag**, not on a push to `main`. A merge with no tag looks like a finished
+release and produces no artifacts.
+
+Bump the version in all six places first. They are in two formats and both
+matter:
+
+| file | format |
+|---|---|
+| `app/package.json` | `4.0.0-beta.2` |
+| `app/src-tauri/Cargo.toml` | `4.0.0-beta.2` |
+| `app/src-tauri/Cargo.lock` | `4.0.0-beta.2` (run `cargo update -p sdcbench --precise <version>`) |
+| `app/src-tauri/tauri.conf.json` | `"version"` `4.0.0-beta.2`, window `"title"` `4.0.0b2` |
+| `app/src/main.js` | `VERSION` `4.0.0b2` |
+| `app/src/canvas.js` | `version:` `4.0.0b2` |
+
+Then:
+
+```bash
+git checkout main && git pull
+git tag -a v4.0.0-beta.2 -m "4.0.0-beta.2"   # must match the version above
+git push origin v4.0.0-beta.2
+```
+
+The tag builds both targets and publishes a GitHub Release with the AppImage
+and the Windows installer attached. Expect roughly twelve minutes: Rust
+compiles for each target, and Windows finishes well after Linux.
 
 ## Documentation
 
