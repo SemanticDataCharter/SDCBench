@@ -10,10 +10,13 @@ import {
   canSearchAdd, saveState, loadState, missingRequirements, mintCount,
 } from './canvas.js'
 
-// Wallet prices (mirror SDCStudio settings: mint $0.10, assemble $0.50). The
-// server charge is authoritative; this is the pre-flight estimate for the popup.
-const MINT_COST = 0.10
-const ASSEMBLE_COST = 0.50
+// Wallet prices in CREDITS (mirror SDCStudio settings: mint 100, assemble 500).
+// The server charge is authoritative; this is the pre-flight estimate for the
+// popup. Credits are the unit the user sees everywhere else, so showing dollars
+// here made SDCBench contradict SDCStudio for the same wallet.
+const MINT_COST = 100
+const ASSEMBLE_COST = 500
+const fmtCredits = (n) => Number(n).toLocaleString('en-US')
 import guideMd from '../../docs/USER-GUIDE.md?raw'
 
 const VERSION = '4.0.0b1'
@@ -91,14 +94,18 @@ async function onConnected(info) {
 // Name + wallet balance in the header. Balance drives what minting will cost.
 function renderWhoami(balance) {
   const name = me?.name || me?.email || 'Signed in'
-  const bal = (balance != null && balance !== '') ? ` · $${Number(balance).toFixed(2)}` : ''
+  const bal = (balance != null && balance !== '') ? ` · ${fmtCredits(balance)} credits` : ''
   $('whoami').textContent = name + bal
 }
 let walletBalance = null // last-known balance (drives the cost check)
 async function refreshWallet() {
   try {
     const w = await getWallet()
-    walletBalance = (w?.balance != null && w.balance !== '') ? Number(w.balance) : null
+    // balance_credits is authoritative. Fall back to converting the USD field
+    // for servers older than the credits fields.
+    walletBalance = (w?.balance_credits != null)
+      ? Number(w.balance_credits)
+      : ((w?.balance != null && w.balance !== '') ? Math.round(Number(w.balance) * 1000) : null)
     renderWhoami(walletBalance)
   } catch { /* keep the name-only display */ }
 }
@@ -261,19 +268,19 @@ $('createbtn').addEventListener('click', async () => {
     return
   }
 
-  // Cost = $0.50 model + $0.10 per new component (reused is free). Confirm first.
+  // Cost = 500 credits model + 100 per new component (reused is free). Confirm first.
   await refreshWallet()
   const count = mintCount()
   const cost = ASSEMBLE_COST + MINT_COST * count
   const short = walletBalance != null && walletBalance < cost
-  $('confirmcost').textContent = `$${cost.toFixed(2)}`
+  $('confirmcost').textContent = `${fmtCredits(cost)} credits`
   $('confirmdetail').textContent =
-    `${count} new component${count === 1 ? '' : 's'} × $${MINT_COST.toFixed(2)} + $${ASSEMBLE_COST.toFixed(2)} data model.` +
-    (walletBalance != null ? ` Wallet balance: $${walletBalance.toFixed(2)}.` : '') +
+    `${count} new component${count === 1 ? '' : 's'} × ${fmtCredits(MINT_COST)} + ${fmtCredits(ASSEMBLE_COST)} data model.` +
+    (walletBalance != null ? ` Wallet balance: ${fmtCredits(walletBalance)} credits.` : '') +
     ' Reused components are free.'
   const warn = $('confirmwarn')
   warn.hidden = !short
-  if (short) warn.innerHTML = 'Not enough wallet balance. <a id="fundlink2" href="#">Fund your wallet →</a>'
+  if (short) warn.innerHTML = 'Not enough credits. <a id="fundlink2" href="#">Add credits →</a>'
   $('fundlink2')?.addEventListener('click', (e) => { e.preventDefault(); openStudio('/app/settings?tab=wallet') })
   $('confirmaccept').disabled = short
   pendingCreate = { req, sig }
@@ -299,7 +306,7 @@ async function doCreate(req, sig) {
     if (r.insufficient_funds) {
       // Wallet ran short (HTTP 402). Offer to fund it.
       $('createstatus').className = 'muted warn'
-      $('createstatus').innerHTML = 'Not enough wallet balance to mint your new components. <a id="fundlink" href="#">Fund your wallet →</a>'
+      $('createstatus').innerHTML = 'Not enough credits to mint your new components. <a id="fundlink" href="#">Add credits →</a>'
       $('fundlink')?.addEventListener('click', (e) => { e.preventDefault(); openStudio('/app/settings?tab=wallet') })
     } else if (r.dm_ct_id) {
       lastCreatedSig = sig // only a fully-created model counts as "done"
