@@ -1,6 +1,6 @@
 [package]
 name = "sdcbench"
-version = "4.0.0-beta.1"
+version = "4.0.0-beta.2"
 description = "SDCBench — the personal bench to SDCStudio"
 authors = ["Axius SDC, Inc."]
 edition = "2021"

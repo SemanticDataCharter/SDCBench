@@ -19,7 +19,7 @@ const ASSEMBLE_COST = 500
 const fmtCredits = (n) => Number(n).toLocaleString('en-US')
 import guideMd from '../../docs/USER-GUIDE.md?raw'
 
-const VERSION = '4.0.0b1'
+const VERSION = '4.0.0b2'
 
 const $ = (id) => document.getElementById(id)
 const gate = (show) => $('gate').classList.toggle('hidden', !show)

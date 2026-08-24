@@ -460,7 +460,7 @@ export function resetCanvas() {
 export function saveState() {
   return JSON.stringify({
     app: 'SDCBench',
-    version: '4.0.0b1',
+    version: '4.0.0b2',
     model: draftPayload(),
     workspace: Blockly.serialization.workspaces.save(ws),
   }, null, 2)

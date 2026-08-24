@@ -1,7 +1,7 @@
 {
   "name": "sdcbench-app",
   "private": true,
-  "version": "4.0.0-beta.1",
+  "version": "4.0.0-beta.2",
   "type": "module",
   "description": "SDCBench — the personal bench to SDCStudio (Tauri shell + Vite frontend)",
   "scripts": {
