@@ -1,6 +1,9 @@
 :root {
-  --bg: #0f1115; --panel: #171a21; --ink: #e6e9ef; --muted: #9aa4b2;
-  --accent: #4f8cff; --line: #262a33; --ok: #8ff0b0; --okbg: #13351f;
+  /* The house palette, shared with axius-sdc.com and semanticdatacharter.com:
+     navy ground and surface, one teal accent, amber only as a signal. */
+  --bg: #050b14; --panel: #0a1a30; --field: #071322; --ink: #e8eef6; --muted: #93a5bd;
+  --accent: #2ca58d; --accent-ink: #04110d; --signal: #f0a500;
+  --line: rgba(255,255,255,0.10); --ok: #7fd9bf; --okbg: #0e2a25;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -13,9 +16,10 @@ header {
   display: flex; align-items: center; gap: 10px; flex: 0 0 auto;
   padding: 10px 16px; border-bottom: 1px solid var(--line);
 }
-header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+header h1 { font-size: 15px; margin: 0; font-weight: 600; letter-spacing: .01em; }
 .badge { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
-.badge.ok { color: var(--ok); background: var(--okbg); border-color: transparent; }
+.badge.ok { color: var(--muted); }  /* the version is information, not a success state */
+.badge.err { color: var(--signal); }
 .grow { flex: 1 1 auto; }
 .session { display: flex; align-items: center; gap: 8px; }
 .session label { font-size: 12px; }
@@ -34,7 +38,7 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 .ok { color: var(--ok); }
 
 input[type=text], input[type=password], select, textarea {
-  background: #0b0d11; color: var(--ink); border: 1px solid var(--line);
+  background: var(--field); color: var(--ink); border: 1px solid var(--line);
   border-radius: 6px; padding: 8px 10px; font-size: 14px; font-family: inherit; width: 100%;
 }
 textarea { resize: vertical; }
@@ -52,47 +56,59 @@ select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa4b2' stroke-width='1.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 10px center;
 }
-select option { background-color: #0b0d11; color: var(--ink); }
+select option { background-color: var(--field); color: var(--ink); }
 a { color: var(--accent); cursor: pointer; }
 button {
-  background: var(--accent); color: #fff; border: 0; border-radius: 6px;
-  padding: 8px 14px; font-size: 14px; cursor: pointer; white-space: nowrap;
+  background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px;
+  padding: 8px 14px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
 }
 button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
 button:disabled { opacity: 0.5; cursor: default; }
 
-/* Search results: blocks wearing the data-type badge (the face they carry onto
-   the canvas when reuse-drag lands). */
-.blocks { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.block {
-  display: flex; align-items: center; gap: 8px;
-  background: #0b0d11; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+/* Search results live next to the search box. Each row is a published component:
+   drag it onto the canvas, or click it to add it to the selected group. */
+.results { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 38vh; overflow: auto; }
+.result {
+  display: flex; align-items: center; gap: 8px; cursor: grab;
+  background: var(--field); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
 }
-.block .chip {
+.result:hover { border-color: var(--accent); }
+.result:active { cursor: grabbing; }
+.result .chip {
   flex: none; font-size: 11px; color: var(--accent);
   border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px;
   background: var(--panel); white-space: nowrap;
 }
-.block .block-label { font-weight: 600; font-size: 13px; }
-.block .block-meta { margin-left: auto; font-size: 11px; }
+.result .result-label { font-weight: 600; font-size: 13px; }
+.result .result-add { margin-left: auto; font-size: 12px; color: var(--muted); }
+.result:hover .result-add { color: var(--accent); }
+#blocklyDiv.droptarget { outline: 2px dashed var(--accent); outline-offset: -3px; }
+
+/* Empty-canvas hint: shown beside the root group until the first field lands. */
+.canvas-hint {
+  position: absolute; left: 300px; top: 84px; max-width: 320px; pointer-events: none;
+  color: var(--muted); font-size: 13px; line-height: 1.5;
+  border-left: 2px solid var(--accent); padding-left: 10px;
+}
+#workspace { position: relative; }
 
 .cv-preview { margin-top: 6px; }
 .cv-preview pre {
-  background: #0b0d11; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--field); border: 1px solid var(--line); border-radius: 8px;
   padding: 10px; font-size: 12px; line-height: 1.45; overflow: auto; max-height: 40vh; margin: 6px 0 0;
 }
 
 /* Login gate: a modal over the canvas until a key is stored. */
 #gate {
   position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(7, 9, 13, 0.82); z-index: 50;
+  background: rgba(5, 11, 20, 0.86); z-index: 50;
 }
 #gate.hidden { display: none; }
 
 /* Cost-confirmation overlay before sending to SDCStudio. */
 #confirm {
   position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(7, 9, 13, 0.82); z-index: 70; padding: 24px;
+  background: rgba(5, 11, 20, 0.86); z-index: 70; padding: 24px;
 }
 #confirm.hidden { display: none; }
 .confirm-card {
@@ -108,7 +124,7 @@ button:disabled { opacity: 0.5; cursor: default; }
 /* Help overlay: the bundled user guide. */
 #help {
   position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(7, 9, 13, 0.82); z-index: 60; padding: 24px;
+  background: rgba(5, 11, 20, 0.86); z-index: 60; padding: 24px;
 }
 #help.hidden { display: none; }
 .help-card {
@@ -127,7 +143,9 @@ button:disabled { opacity: 0.5; cursor: default; }
 .help-body p { margin: 8px 0; font-size: 14px; color: var(--ink); }
 .help-body ul { margin: 8px 0; padding-left: 22px; }
 .help-body li { margin: 4px 0; font-size: 14px; }
-.help-body code { background: #0b0d11; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+.help-body code { background: var(--field); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+.help-toc { margin: 8px 0 14px; padding: 10px 14px; background: var(--field); border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
+.help-toc a { display: inline-block; margin: 2px 12px 2px 0; }
 .help-body strong { color: var(--ink); }
 .gate-card {
   width: 440px; max-width: 92vw; background: var(--panel);
