@@ -40,7 +40,7 @@ Pizza.owl*, is the natural cross-reference for readers who want the ontology hal
 A first-time user, starting from `sdcstudio.axius-sdc.com` with a $10 wallet, ends with
 `http://localhost:8000` showing a list of pizza orders they typed in, backed by a data model
 they published, more than half of which they reused rather than wrote, in under two hours and
-under 3,000 credits.
+about 3,000 credits.
 
 ## 2. The scenario
 
@@ -145,18 +145,18 @@ for readers coming from openEHR, and then stops using openEHR words.
 
 | Operation | Credits each | Count | Credits |
 |---|---|---|---|
-| Mint new component | 100 | 7 leaves + 2 groups = 9 | 900 |
+| Mint new component | 100 | 7 fields + 3 groups (Customer, Pizza, and the pre-seeded root group, which is billed too) = 10 | 1,000 |
 | Assemble model | 500 | 1 | 500 |
 | Download generated app | 1,500 | 1 | 1,500 |
 | Validate an XML instance | 1 | up to 5 | 5 |
 | Sign an instance (optional last step) | 5 | 1 | 5 |
-| **Total** | | | **about 2,900** |
+| **Total** | | | **about 3,000** |
 
 Reuse is free. A $10 wallet covers the tutorial three times over, which matters: a learner who
 makes a mistake and rebuilds must not run dry. **FR-8 requires the tutorial to state the
 running total at each paid step**, and to confirm the exact figures against the live price
-list before publication, since the Group mint price is the one item the price list does not
-name separately.
+list before publication. Clusters are billed as components (Tim, 2026-09-14), and the bench's
+own cost dialog confirms it: the pizza model shows "10 new components".
 
 ## 6. User flow with the clock
 
