@@ -31,7 +31,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Check out the SDC4 reference model (public, pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: SemanticDataCharter/SDCRM
+          ref: v4.1.0
+          path: sdcrm
       - name: Canon tests
+        env:
+          SDCRM_XSD: ${{ github.workspace }}/sdcrm/sdc4/schemas/sdc4.xsd
         run: |
           pip install -q pytest
           python -m pytest -q tests
