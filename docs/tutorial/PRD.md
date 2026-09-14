@@ -1,6 +1,6 @@
 # SDCBench Tutorial PRD: "The Pizza Order"
 
-**Status:** Draft 1, 2026-09-14, for discussion. Written from the 11 September strategy session
+**Status:** Draft 1, 2026-09-14, for discussion. Three of the open questions were settled by Tim the same day; see section 8. The tutorial itself is paused behind a usability and visual review of SDCBench. Written from the 11 September strategy session
 with Thomas Beale, where the participants agreed on a step-by-step, pizza-ontology-style
 tutorial for SDCBench and a two-hour onboarding bar: a new user authors a model, builds a
 simple application and sees data in it.
@@ -97,12 +97,18 @@ published. If any is renamed or unpublished, the tutorial breaks at step 3; see 
 
 The tutorial is written for **one person playing two roles in sequence**, and says so:
 
-1. **The domain expert** (SDCBench): reuse, sketch, structure, write a plain-language
-   requirement for each new piece. Never meets the reference model.
-2. **The data modeler** (SDCStudio): finish each new component from its requirement
-   (constraints, codes, units, semantic binding), publish bottom-up, generate outputs.
+1. **The domain expert at the bench** (SDCBench): reuse, sketch, structure, write a
+   plain-language requirement for each new piece. Never meets the reference model.
+2. **The same domain expert in SDCStudio**: finish each new component from its own
+   requirement (constraints, codes, units, semantic binding), publish bottom-up, generate
+   outputs.
 
-Beale's reviewer persona is the second role. Both roles matter for the "template with
+**Settled 2026-09-14 (Tim):** SDCStudio is for the domain-expert modeler, not a separate
+expert-modeler caste. Step 4 is therefore a teaching step for the same person, and the tutorial
+frames SDCStudio as the place where the expert learns what their requirement means in
+constraints. The "two people in a real team" note stays as an aside, not the frame.
+
+Beale's reviewer persona is that same domain expert, in both places. Both roles matter for the "template with
 archetypes" decision from the meeting: in SDC terms the archetype-like reusable units are the
 published Clusters (`Full Name (Person)`, `US Address`), and the template is the Data Model
 that composes them with a few local components. The tutorial names this correspondence once,
@@ -208,18 +214,15 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 
 ## 8. Open questions for discussion
 
-1. **Who finishes the components in step 4?** As written, the same learner plays modeler. The
-   alternative is to ship the seven new components pre-finished in a public `Tutorial` project
-   so the learner only publishes and generates. That cuts step 4 to five minutes and the cost to
-   about 2,000 credits, but it removes the one step where SDC's constraint model is actually
-   felt. Recommendation: keep step 4, supply the exact values (FR-4), and offer the pre-finished
-   path as the "short version" alongside the FR-3 draft file.
+1. **Who finishes the components in step 4?** **Settled: the learner does.** SDCStudio is
+   a teaching tool for the domain expert, so step 4 stays, with the exact values supplied
+   (FR-4). The pre-finished short version is optional, not a substitute.
 2. **Public `Tutorial` library or Default only?** The model reuses Default only, which keeps
    "Search in" simple. A public `Tutorial` project would let us pin the pizza-specific codes for
    the short version above. It also means one more public project to maintain. Tim's call.
-3. **Group minting cost.** The price list names components at 100 and models at 500; it does
-   not say whether a new Cluster is billed as a component. The budget assumes yes. Confirm
-   before the numbers go in print.
+3. **Group minting cost.** **Settled: Clusters are billed.** The budget in section 5 already
+   assumes 100 credits per new group. The price list should say so; that is a docs fix in
+   SDCStudio, not a tutorial question.
 4. **Which SDCBench version does the tutorial target?** 4.0.0-beta.2 is current. If the party,
    participation and attestation work lands before the tutorial ships, the model gains nothing
    from them and the screenshots change. Suggest pinning to the beta that exists and retaking
@@ -227,10 +230,10 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 5. **Where does it live publicly?** `docs/tutorial/` in this repo is the source. Rendered copies
    on semanticdatacharter.com (the on-ramp) and inside SDCBench Help (offline). The
    axius-sdc.com practitioner pages should link to it, not copy it.
-6. **Does "visualize data" need more than the generated app's pages?** Beale's two-hour bar
-   says "visualize data". The generated Django app gives list and detail pages, which is
-   viewing rather than visualizing. If a chart is wanted, that is a change to AppGen, not to
-   the tutorial, and it should be scoped separately.
+6. **Does "visualize data" need more than the generated app's pages?** **Settled: no, for
+   now.** The connected blocks on the canvas are the visualization of the model, and the
+   generated app's pages are the view of the data. Charts would be an AppGen change and are
+   not in this tutorial.
 7. **Sequel order.** Candidates: the FHIR variant (Beale's demo priority), the CordovaOS graph
    tutorial (starts from the generated app's data), and the multi-model project (two models
    sharing the `Customer` group). Recommendation: FHIR variant second, because it reuses this
@@ -249,6 +252,10 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 
 ## 10. Deliverables and order of work
 
+0. **A usability and visual review of SDCBench itself, before any tutorial work** (Tim,
+   2026-09-14). The tutorial will put the bench in front of new users for the first time;
+   anything that would embarrass it should be fixed first, and the review is cheaper before
+   the screenshots exist. Findings and fixes are tracked outside this PRD.
 1. This PRD, agreed.
 2. Build the model ourselves end to end, timing each step and recording the credits. The
    numbers in section 6 are targets; the run replaces them with measurements.
