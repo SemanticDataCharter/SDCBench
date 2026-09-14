@@ -60,29 +60,28 @@ See [`docs/CI-SIGNING.md`](docs/CI-SIGNING.md) for Windows code signing.
 **tag**, not on a push to `main`. A merge with no tag looks like a finished
 release and produces no artifacts.
 
-Bump the version in all six places first. They are in two formats and both
-matter:
+The version lives in one file, `VERSION`. Seven other places show it (package
+and lock, Cargo manifest and lock, the Tauri config and window title, and the
+two frontend constants), and a script writes all of them:
 
-| file | format |
-|---|---|
-| `app/package.json` | `4.0.0-beta.2` |
-| `app/src-tauri/Cargo.toml` | `4.0.0-beta.2` |
-| `app/src-tauri/Cargo.lock` | `4.0.0-beta.2` (run `cargo update -p sdcbench --precise <version>`) |
-| `app/src-tauri/tauri.conf.json` | `"version"` `4.0.0-beta.2`, window `"title"` `4.0.0b2` |
-| `app/src/main.js` | `VERSION` `4.0.0b2` |
-| `app/src/canvas.js` | `version:` `4.0.0b2` |
+```bash
+python3 tools/set_version.py 4.0.0-beta.3   # writes VERSION and every derived place
+python3 tools/set_version.py --check        # what CI runs: exit 1 on any disagreement
+```
 
 Then:
 
 ```bash
 git checkout main && git pull
-git tag -a v4.0.0-beta.2 -m "4.0.0-beta.2"   # must match the version above
-git push origin v4.0.0-beta.2
+git tag -a v4.0.0-beta.3 -m "4.0.0-beta.3"   # must equal VERSION; CI refuses otherwise
+git push origin v4.0.0-beta.3
 ```
 
-The tag builds both targets and publishes a GitHub Release with the AppImage
-and the Windows installer attached. Expect roughly twelve minutes: Rust
-compiles for each target, and Windows finishes well after Linux.
+CI runs the canon tests and the version check on every pull request. On a tag it
+also refuses a tag that does not equal `VERSION` or is not on `main`, then builds
+both targets and publishes a GitHub Release with the AppImage and the Windows
+installer attached. Expect roughly twelve minutes: Rust compiles for each target,
+and Windows finishes well after Linux.
 
 ## Documentation
 
