@@ -139,7 +139,7 @@ for readers coming from openEHR, and then stops using openEHR words.
 | A private project of the user's own | Created in SDCStudio ("Building in"); private by default | 0 |
 | Docker or Podman with compose | User's machine, for the generated app | 6 |
 | Python 3.12 | Only if running the generated app without Docker | 6 |
-| The Pizza ontology IRIs | Public, `http://www.co-ode.org/ontologies/pizza/pizza.owl#` | 4 |
+| The Pizza ontology, uploaded to production SDCStudio **once, as Public, by Tim** | `docs/tutorial/pizza.owl` (v2.0, CC BY 3.0, from protege.stanford.edu); fields and IRIs in `PIZZA-ONTOLOGY.md`. The semantic-link search then finds `pizza.owl#MozzarellaTopping` and friends for every modeler | 4 |
 
 ### Cost budget, from the published price list
 
@@ -179,8 +179,11 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 
 ## 7. Functional requirements (for the tutorial as a product)
 
-- **FR-1 Format.** Markdown in `docs/tutorial/`, one file per step plus an index, rendered on
-  semanticdatacharter.com and in SDCBench's Help overlay. Every step has: goal, do this, what
+- **FR-1 Format and location.** The tutorial is built in **`pizza_tutorial/` at the repository
+  root**, beside `app/` (Tim, 2026-09-14): one Markdown file per step plus an index, the FR-3
+  draft file, the FR-9 pre-flight script, and whatever the steps produce (sample orders, the
+  generated app's compose file if it is worth pinning). `docs/tutorial/` keeps this PRD, the
+  ontology and its notes. Rendered on semanticdatacharter.com and in SDCBench's Help overlay. Every step has: goal, do this, what
   you should see, if it did not.
 - **FR-2 Screenshots.** One per checkpoint, taken from the shipped SDCBench build and current
   SDCStudio, with the version stated. Retaken on any UI change that moves a control.
@@ -203,7 +206,8 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 - **FR-8 Running cost.** Each paid step states its price and the cumulative total. Figures
   verified against the live price list at publication and dated.
 - **FR-9 A pre-flight check.** A short script (or a documented SDCStudio search) that confirms
-  the ten reused components still exist and are published under the labels the tutorial uses.
+  the ten reused components still exist and are published under the labels the tutorial uses,
+  and that the Pizza ontology is present and public in Semantic Enhancement.
   Run before every release of the tutorial; the labels are pinned by `ct_id` in the draft file
   from FR-3 so the recovery path survives a relabel.
 - **FR-10 Failure modes named.** Unsigned installer warning; "Building in" showing no
@@ -227,9 +231,9 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
    participation and attestation work lands before the tutorial ships, the model gains nothing
    from them and the screenshots change. Suggest pinning to the beta that exists and retaking
    screenshots per FR-2 when the next release lands.
-5. **Where does it live publicly?** `docs/tutorial/` in this repo is the source. Rendered copies
-   on semanticdatacharter.com (the on-ramp) and inside SDCBench Help (offline). The
-   axius-sdc.com practitioner pages should link to it, not copy it.
+5. **Where does it live publicly?** **Settled:** `pizza_tutorial/` at the repo root is the
+   source (FR-1). Rendered copies on semanticdatacharter.com (the on-ramp) and inside SDCBench
+   Help (offline). The axius-sdc.com practitioner pages should link to it, not copy it.
 6. **Does "visualize data" need more than the generated app's pages?** **Settled: no, for
    now.** The connected blocks on the canvas are the visualization of the model, and the
    generated app's pages are the view of the data. Charts would be an AppGen change and are
