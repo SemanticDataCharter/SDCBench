@@ -23,6 +23,7 @@ const ROOT_ACCEPTS = nk.Model.root_accepts_canvas   // ['Group']
 const GROUP_ACCEPTS = nk.Group.accepts_canvas       // ['Group','Field']
 const TYPE_BADGES = nk.Field.type_badges
 const API_BADGES = model.canvas.api_type_badges
+if (typeof window !== 'undefined') window.__apiBadges = API_BADGES
 const CLUSTER_MEMBERS = new Set(model.canvas.cluster_member_api_types)
 export const canReuse = (type) => CLUSTER_MEMBERS.has(type)
 // Units / ReferenceRange aren't Cluster members but ARE reusable — they attach to a
@@ -43,35 +44,51 @@ nk.Field.rm_types.forEach((rm) => {
   API_TO_RM[rm === 'XdIntervalType' ? 'interval' : rm.slice(0, -4).toLowerCase()] = rm
 })
 
+// House palette. One colour for data, whatever its family: the type badge on the
+// block face carries the distinction, and three greens did not read as three.
 const COL = {
-  entry: '#2e8b57',   // data — plain (XdString/Token/Boolean/Link/File…)
-  ordered: '#2f9e8f',  // data — ordered (Ordinal/Temporal)
-  quant: '#6a9a3f',    // data — quantified (Count/Quantity/Float/Double)
-  group: '#475569',    // container (Cluster)
-  attach: '#d9a441',   // attachments (Units, ReferenceRange)
-  model: '#4f5bd5',    // the DM root
+  entry: '#2ca58d',    // data (every Xd* leaf)
+  group: '#3b5578',    // container (Cluster)
+  attach: '#f0a500',   // attachments (Units, ReferenceRange): the signal colour
+  model: '#5b6ee1',    // the DM root
 }
-function dataColour(rm) {
-  if (QUANTIFIED.has(rm)) return COL.quant
-  if (ORDERED.has(rm)) return COL.ordered
-  return COL.entry
+function dataColour(rm) { return COL.entry }
+// A small SVG pill used as a block-face marker for reuse. Colour is reserved for the
+// data type, so reuse is shown by this word, not by hue.
+function pill(text, width) {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='16' viewBox='0 0 ${width} 16'>` +
+    `<rect x='0.5' y='0.5' width='${width - 1}' height='15' rx='7.5' fill='rgba(255,255,255,0.16)' stroke='rgba(255,255,255,0.45)'/>` +
+    `<text x='${width / 2}' y='11.5' text-anchor='middle' font-family='system-ui,sans-serif' font-size='10' font-weight='600' fill='#fff'>${text}</text></svg>`
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg)
 }
+const REUSED_PILL = { type: 'field_image', src: pill('reused', 52), width: 52, height: 16, alt: 'reused' }
+
 const dataColourApi = (apiType) => dataColour(API_TO_RM[apiType] || '')
 
 // --- The new-field mutator: shows a Units slot for quantified types and a
 // reference-range slot for XdOrdered types, and colours the block by family. ---
+// The ranges bay is not shown by default: ranges are optional at the bench and the
+// modeler adds them in SDCStudio, so an empty bay on every number field only made
+// the block taller. It appears when a range is dropped (see attachToField) and is
+// remembered in the block's extra state. The units socket keeps a shadow block
+// that reads "none yet" instead of a bare notch.
 const FIELD_MIXIN = {
-  saveExtraState() { return { kind: this.getFieldValue('KIND') } },
-  loadExtraState(state) { this.updateShape_((state && state.kind) || this.getFieldValue('KIND')) },
-  updateShape_(kind) {
+  saveExtraState() { return { kind: this.getFieldValue('KIND'), ranges: !!this.getInput('REFRANGES') } },
+  loadExtraState(state) { this.updateShape_((state && state.kind) || this.getFieldValue('KIND'), !!(state && state.ranges)) },
+  updateShape_(kind, ranges) {
     const wantUnits = QUANTIFIED.has(kind)
-    const wantRanges = ORDERED_OR_QUANT.has(kind)
-    if (wantUnits && !this.getInput('UNITS')) this.appendValueInput('UNITS').setCheck('Units').appendField('units')
+    const mayRange = ORDERED_OR_QUANT.has(kind)
+    const wantRanges = mayRange && (ranges === undefined ? !!this.getInput('REFRANGES') : ranges)
+    if (wantUnits && !this.getInput('UNITS')) {
+      const inp = this.appendValueInput('UNITS').setCheck('Units').appendField('units')
+      inp.connection.setShadowState({ type: 'sdc_units_empty' })
+    }
     if (!wantUnits && this.getInput('UNITS')) this.removeInput('UNITS')
     if (wantRanges && !this.getInput('REFRANGES')) this.appendStatementInput('REFRANGES').setCheck('RefRange').appendField('ranges')
     if (!wantRanges && this.getInput('REFRANGES')) this.removeInput('REFRANGES')
     this.setColour(dataColour(kind))
   },
+  showRanges_() { if (ORDERED_OR_QUANT.has(this.getFieldValue('KIND'))) this.updateShape_(this.getFieldValue('KIND'), true) },
 }
 function fieldHelper() {
   this.setInputsInline(true)
@@ -123,11 +140,20 @@ Blockly.defineBlocksWithJsonArray([
     tooltip: 'A new data field, shown by its data type. Auto-wrapped inside a Group.',
     extensions: ['sdc_desc'],
   },
-  // Reused published component — carries its ct_id in block.data; ↩ marks reuse.
+  // The empty units socket: a shadow that says so, replaced when Units are dropped.
+  {
+    type: 'sdc_units_empty',
+    message0: 'none yet',
+    output: 'Units',
+    colour: COL.attach,
+    tooltip: 'Drop a published Units here. The modeler can also add it in SDCStudio.',
+  },
+  // Reused published component. Carries its ct_id in block.data; the pill marks reuse.
   {
     type: 'sdc_field_reused',
-    message0: '↩ %1 · %2',
+    message0: '%1 %2 %3',
     args0: [
+      REUSED_PILL,
       { type: 'field_label_serializable', name: 'BADGE', text: '' },
       { type: 'field_label_serializable', name: 'LABEL', text: '' },
     ],
@@ -138,8 +164,8 @@ Blockly.defineBlocksWithJsonArray([
   },
   {
     type: 'sdc_group_reused',
-    message0: '↩ Group · %1',
-    args0: [{ type: 'field_label_serializable', name: 'LABEL', text: '' }],
+    message0: '%1 Group %2',
+    args0: [REUSED_PILL, { type: 'field_label_serializable', name: 'LABEL', text: '' }],
     previousStatement: 'Group', nextStatement: GROUP_ACCEPTS, // opaque: no ITEMS slot
     colour: COL.group,
     tooltip: 'A published Cluster reused by reference; edit its internals in SDCStudio.',
@@ -149,8 +175,8 @@ Blockly.defineBlocksWithJsonArray([
   // units slot, never a Cluster.
   {
     type: 'sdc_units_reused',
-    message0: '↩ units · %1',
-    args0: [{ type: 'field_label_serializable', name: 'LABEL', text: '' }],
+    message0: '%1 %2',
+    args0: [REUSED_PILL, { type: 'field_label_serializable', name: 'LABEL', text: '' }],
     output: 'Units',
     colour: COL.attach,
     tooltip: 'A published Units — drops into a number field’s units slot.',
@@ -160,8 +186,8 @@ Blockly.defineBlocksWithJsonArray([
   // field's ranges slot (M2M, so several may stack).
   {
     type: 'sdc_refrange_reused',
-    message0: '↩ range · %1',
-    args0: [{ type: 'field_label_serializable', name: 'LABEL', text: '' }],
+    message0: '%1 range %2',
+    args0: [REUSED_PILL, { type: 'field_label_serializable', name: 'LABEL', text: '' }],
     previousStatement: 'RefRange', nextStatement: 'RefRange',
     colour: COL.attach,
     tooltip: 'A published reference range — stacks in a field’s ranges slot.',
@@ -173,7 +199,7 @@ const toolbox = {
   kind: 'categoryToolbox',
   contents: [
     {
-      kind: 'category', name: 'New', colour: '#6a9a3f',
+      kind: 'category', name: 'New', colour: COL.entry,
       contents: [
         { kind: 'block', type: 'sdc_group' },
         { kind: 'block', type: 'sdc_field' },
@@ -181,20 +207,23 @@ const toolbox = {
         { kind: 'block', type: 'sdc_model' },
       ],
     },
-    { kind: 'category', name: 'Reuse', colour: '#d9a441', custom: 'REUSE' },
+    { kind: 'category', name: 'Reuse', colour: COL.attach, custom: 'REUSE' },
   ],
 }
 
 const theme = Blockly.Theme.defineTheme('sdcdark', {
   base: Blockly.Themes.Classic,
   componentStyles: {
-    workspaceBackgroundColour: '#0f1115',
-    toolboxBackgroundColour: '#171a21',
-    flyoutBackgroundColour: '#1c2029',
-    scrollbarColour: '#39404d',
-    insertionMarkerColour: '#4f8cff',
-    insertionMarkerOpacity: 0.4,
+    workspaceBackgroundColour: '#050b14',
+    toolboxBackgroundColour: '#0a1a30',
+    flyoutBackgroundColour: '#0b1f3a',
+    flyoutForegroundColour: '#e8eef6',
+    scrollbarColour: '#2a3a55',
+    insertionMarkerColour: '#2ca58d',
+    insertionMarkerOpacity: 0.5,
+    cursorColour: '#2ca58d',
   },
+  fontStyle: { family: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', weight: '500', size: 11 },
 })
 
 let ws = null
@@ -203,7 +232,7 @@ let reuseRows = []
 // Dynamic "Reuse" flyout: the current library-search results as draggable blocks.
 function reuseFlyout() {
   if (!reuseRows.length) {
-    return [{ kind: 'label', text: 'Search your library in the panel →' }]
+    return [{ kind: 'label', text: 'Search the library in the panel on the right' }]
   }
   return reuseRows.filter((r) => canSearchAdd(r.type)).map((r) => {
     // description rides along so the block can hover-show it (flyout + canvas).
@@ -255,7 +284,7 @@ function setReq(b, text) {
 }
 const unitsCt = (b) => {
   const u = b.getInput('UNITS')?.connection?.targetBlock()
-  return u ? (reuseData(u).ct_id || '') : ''
+  return (u && !u.isShadow()) ? (reuseData(u).ct_id || '') : ''
 }
 const refrangeCts = (b) => inputStack(b, 'REFRANGES').map((r) => reuseData(r).ct_id || '').filter(Boolean)
 
@@ -368,11 +397,22 @@ function refresh() {
   const out = document.getElementById('cvout')
   const status = document.getElementById('cvstatus')
   if (out) out.textContent = JSON.stringify(structs.length === 1 ? structs[0] : structs, null, 2)
+  const empty = !hasContent()
+  const hint = document.getElementById('canvashint')
+  if (hint) hint.hidden = !empty
   if (status) {
     const w = warnings(structs)
-    if (w.length) { status.className = 'muted warn'; status.textContent = '⚠ ' + w.join('  ') }
-    else { status.className = 'muted ok'; status.textContent = '✓ Your model is valid.' }
+    if (w.length) { status.className = 'muted warn'; status.textContent = w.join('  ') }
+    else if (empty) { status.className = 'muted'; status.textContent = 'Empty. Add fields to the root group.' }
+    else {
+      const missing = missingRequirements().length
+      if (missing) { status.className = 'muted warn'; status.textContent = `${missing} new field${missing === 1 ? ' needs' : 's need'} a requirement before sending.` }
+      else { status.className = 'muted ok'; status.textContent = 'Ready to send.' }
+    }
   }
+  // A new field without a requirement wears a warning icon on the canvas, so the
+  // reader does not have to hunt from the status text.
+  ws.getBlocksByType('sdc_field', false).forEach((b) => b.setWarningText(reqOf(b).trim() ? null : 'Needs a requirement before sending. Select it and write one in the panel.'))
 }
 
 // --- FR-13 requirement editor: shows for the selected NEW component (field/group).
@@ -398,11 +438,12 @@ export function initCanvas() {
   ws = Blockly.inject('blocklyDiv', {
     toolbox,
     theme,
+    renderer: 'zelos', // rounded, quieter connectors than the classic puzzle notches
     media: '/blockly-media/',
-    trashcan: false, // drag a block off to the left to remove it
+    trashcan: true, // dragging off to the left still works; the can is the visible way
     scrollbars: true,
-    zoom: { controls: true, wheel: false, startScale: 0.95 },
-    grid: { spacing: 24, length: 2, colour: '#20242d', snap: true },
+    zoom: { controls: true, wheel: false, startScale: 0.9 },
+    grid: { spacing: 24, length: 2, colour: '#12213a', snap: true },
   })
   ws.registerToolboxCategoryCallback('REUSE', reuseFlyout)
   ws.addChangeListener((e) => {
@@ -412,8 +453,12 @@ export function initCanvas() {
       const b = ws.getBlockById(e.blockId)
       if (b && b.type === 'sdc_field_reused') b.setColour(dataColourApi(reuseData(b).type))
     }
+    // A click on a block also counts as selecting it (Blockly 13 reports clicks and
+    // selection separately, and a panel click can clear the selection first).
+    if (e?.type === Blockly.Events.CLICK && e.blockId) { lastSelectedId = e.blockId; updateReqEditor(e.blockId) }
     if (e?.type === Blockly.Events.SELECTED) {
       if (e.newElementId) {
+        lastSelectedId = e.newElementId
         updateReqEditor(e.newElementId)
       } else {
         // Deselected. Close the editor only if focus moved to the canvas, not the
@@ -442,9 +487,85 @@ export function setReuseResults(rows) {
   if (!ws) return
   const tb = ws.getToolbox()
   if (!tb) return
+  // The panel list is the primary surface; the Reuse flyout mirrors it but is not
+  // opened for the user, so results never cover the model.
   const reuse = tb.getToolboxItems?.().find((i) => i.getName?.() === 'Reuse')
-  if (reuse && tb.getSelectedItem?.() !== reuse) tb.setSelectedItem(reuse)
-  else tb.refreshSelection()
+  if (reuse && tb.getSelectedItem?.() === reuse) tb.refreshSelection()
+}
+
+// --- Add a search result to the canvas from the panel (click or drop). ---
+function blockStateFor(r) {
+  const data = JSON.stringify({ ct_id: r.ct_id, type: r.type, description: r.description || '' })
+  if (r.type === 'units') return { type: 'sdc_units_reused', data, fields: { LABEL: r.label } }
+  if (r.type === 'referencerange') return { type: 'sdc_refrange_reused', data, fields: { LABEL: r.label } }
+  if (r.type === 'cluster') return { type: 'sdc_group_reused', data, fields: { LABEL: r.label } }
+  return { type: 'sdc_field_reused', data, fields: { BADGE: API_BADGES[r.type] || r.type, LABEL: r.label } }
+}
+const lastInStack = (b) => { while (b && b.getNextBlock()) b = b.getNextBlock(); return b }
+// The block the user last selected. Blockly clears its own selection when focus
+// moves to the panel, which is exactly when the panel needs to know it.
+let lastSelectedId = null
+function selectedBlock() {
+  const sel = (Blockly.common && Blockly.common.getSelected) ? Blockly.common.getSelected() : (Blockly.getSelected && Blockly.getSelected())
+  const b = sel && ws.getBlockById(sel.id)
+  return b || (lastSelectedId ? ws.getBlockById(lastSelectedId) : null)
+}
+function targetGroup() {
+  let b = selectedBlock()
+  // The selected block, or the group it sits in, or the root group.
+  while (b && b.type !== 'sdc_group') b = b.getParent()
+  if (!b) { const m = ws.getTopBlocks(false).find((x) => x.type === 'sdc_model'); b = m && m.getInputTargetBlock('ROOT') }
+  return b || null
+}
+function targetField(check) {
+  const b = selectedBlock()
+  return (b && b.type === 'sdc_field' && check(b.getFieldValue('KIND'))) ? b : null
+}
+/**
+ * Add a published component to the model. `at` is a client point (a drop) or null
+ * (a click). Fields and groups join the selected group, or the root group. Units and
+ * ranges attach to the selected number/ordered field. Returns a status sentence.
+ */
+export function addReusedToCanvas(r, at) {
+  if (!ws) return 'Canvas not ready.'
+  const state = blockStateFor(r)
+  if (r.type === 'units') {
+    const f = targetField((k) => QUANTIFIED.has(k))
+    if (!f) return 'Select a number field first, then add the units.'
+    const u = Blockly.serialization.blocks.append(state, ws)
+    f.getInput('UNITS').connection.connect(u.outputConnection)
+    return `Units "${r.label}" set on ${f.getFieldValue('NAME')}.`
+  }
+  if (r.type === 'referencerange') {
+    const f = targetField((k) => ORDERED_OR_QUANT.has(k))
+    if (!f) return 'Select a number, date or ranked field first, then add the range.'
+    f.showRanges_()
+    const rb = Blockly.serialization.blocks.append(state, ws)
+    const inp = f.getInput('REFRANGES').connection
+    const tail = inp.targetBlock() ? lastInStack(inp.targetBlock()) : null
+    if (tail) tail.nextConnection.connect(rb.previousConnection); else inp.connect(rb.previousConnection)
+    return `Range "${r.label}" added to ${f.getFieldValue('NAME')}.`
+  }
+  const g = targetGroup()
+  if (!g) return 'Your model needs a root group.'
+  const nb = Blockly.serialization.blocks.append(state, ws)
+  if (nb.type === 'sdc_field_reused') nb.setColour(dataColourApi(r.type))
+  const items = g.getInput('ITEMS').connection
+  const tail = items.targetBlock() ? lastInStack(items.targetBlock()) : null
+  if (tail) tail.nextConnection.connect(nb.previousConnection); else items.connect(nb.previousConnection)
+  if (at) { /* dropped: the block is already in place; a drop point is advisory */ }
+  ws.scrollBlockIntoView?.(nb.id)
+  return `Added "${r.label}" to ${g.getFieldValue('NAME')}.`
+}
+
+// New groups and fields the send will mint, for the cost line.
+export function mintBreakdown() {
+  const p = draftPayload()
+  if (!p) return { groups: 0, fields: 0 }
+  let groups = 0, fields = 0
+  const walk = (g) => { if (g.reuse_ct_id) return; groups += 1; fields += g.fields.filter((f) => !f.reuse_ct_id).length; g.groups.forEach(walk) }
+  walk(p.root)
+  return { groups, fields }
 }
 
 export function resetCanvas() {

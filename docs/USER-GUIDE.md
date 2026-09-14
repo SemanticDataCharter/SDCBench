@@ -30,17 +30,20 @@ Two selectors, and they can be different projects:
 
 - **Building in** is where your new draft model will be saved. This is one of your
   own projects.
-- **Search in** is where you look for components to reuse. This can be any library or
-  project you can read, so you can pull shared components into your own model.
+- **Search in** is where you look for components to reuse. It starts on **Everything I
+  can see**, which searches your projects, your team's, and every public library at once.
+  Pick one project to narrow the search.
 
 ## 3. Find and reuse components
 
 Reuse is the main way you build. In the **Reuse** panel, search by meaning, for
 example "blood pressure" or "date of birth", not by any technical type.
 
-- Matches appear in the **Reuse** tab on the canvas.
-- **Hover** a component to read its description so you know what it is.
-- **Drag** it onto the canvas to reuse it. Reused blocks carry a **↩** tag.
+- Matches appear as a list under the search box.
+- **Hover** a match to read its description so you know what it is.
+- **Click** a match to add it to the selected group (or the root group), or **drag** it
+  onto the canvas. Reused blocks carry a small **reused** pill.
+- The **Reuse** tab on the canvas holds the same matches if you prefer to drag from there.
 
 Reusing a published component is always better than making a new one: it keeps your
 model consistent with everyone else's and saves the modeler work.
@@ -55,9 +58,10 @@ You fill the group.
   Date, Code, Boolean, and so on.
 - Blocks only snap where they are allowed. If a block will not connect, it does not
   belong there.
-- Colors are a legend: data fields are greens (shaded by kind), a group is slate,
-  units and ranges are amber, the model is indigo.
-- To remove a block, drag it off to the left.
+- Colors are a legend: data fields are teal, a group is slate, units and ranges are
+  amber, the model is indigo. The word on the block says what kind of data it is.
+- To remove a block, drag it to the bin at the bottom of the canvas, or off to the left.
+- A new field that still needs a requirement shows a small warning icon.
 
 ## 5. Describe each new component
 
@@ -74,11 +78,11 @@ describe them.
 
 ## 6. Numbers, units, and ranges
 
-- A **number** field (Integer or Decimal) can take a **Units**. Search for the units
-  (for example "mmHg"), then drag it into the field's **units** slot. Most units
-  already exist, so you usually reuse one.
+- A **number** field (Integer or Decimal) has a **units** slot that reads "none yet".
+  Search for the units (for example "mmHg"), select the field, and click the match, or
+  drag it into the slot. Most units already exist, so you usually reuse one.
 - **Ordered** fields (a ranking, a date, or a number) can take **reference ranges**.
-  Search for a range and drag it into the field's **ranges** slot.
+  Select the field and click a range match; the field grows a **ranges** slot to hold it.
 - Units and ranges are optional while you draft. If you leave a unit off, the modeler
   adds it in SDCStudio before publishing.
 
@@ -106,6 +110,11 @@ Open your project in SDCStudio. A data modeler finalizes each new component
 (constraints, units, reference ranges, semantic links), using the requirements you
 wrote as the specification, and publishes the model. That is where the modeling
 knowledge lives; SDCBench got you the structure and the intent.
+
+## Advanced
+
+The **Advanced** disclosure in the panel shows the structure SDCBench will send, the way
+a data modeler sees it. You never need it to build a model.
 
 ## Tips
 

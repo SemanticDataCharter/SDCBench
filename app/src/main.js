@@ -8,6 +8,7 @@ import {
 import {
   initCanvas, resizeCanvas, setReuseResults, draftPayload, hasContent,
   canSearchAdd, saveState, loadState, missingRequirements, mintCount,
+  addReusedToCanvas, mintBreakdown,
 } from './canvas.js'
 
 // Wallet prices in CREDITS (mirror SDCStudio settings: mint 100, assemble 500).
@@ -48,6 +49,21 @@ function mdToHtml(md) {
   return html
 }
 $('helpbody').innerHTML = mdToHtml(guideMd)
+// A contents list at the top of Help, from its section headings.
+;(function helpToc() {
+  const body = $('helpbody')
+  const h2s = [...body.querySelectorAll('h2')]
+  if (h2s.length < 3) return
+  const toc = document.createElement('nav')
+  toc.className = 'help-toc'
+  h2s.forEach((h, i) => {
+    h.id = 'help-' + i
+    const a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent
+    a.addEventListener('click', (e) => { e.preventDefault(); h.scrollIntoView({ block: 'start' }) })
+    toc.appendChild(a)
+  })
+  body.insertBefore(toc, body.firstChild)
+})()
 const showHelp = (on) => $('help').classList.toggle('hidden', !on)
 $('helpbtn').addEventListener('click', () => showHelp(true))
 $('helpclose').addEventListener('click', () => showHelp(false))
@@ -58,9 +74,9 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') showHelp(f
 health()
   .then((h) => {
     $('health').textContent = `${h.app} ${VERSION}`
-    $('health').className = 'badge ok'
+    $('health').className = 'badge'
   })
-  .catch((e) => { $('health').textContent = `bridge error: ${e}` })
+  .catch((e) => { $('health').textContent = `bridge error: ${e}`; $('health').className = 'badge err' })
 
 // --- Session ---
 let me = null
@@ -156,10 +172,58 @@ async function loadProjects(defaultCt) {
     selectedProject = fillSelect($('projects'), mine, defaultCt)
   }
 
-  // Reuse source: any accessible project (own + team + public + default library),
-  // so you can pull components from a shared library while building in your own.
-  searchProject = fillSelect($('searchproject'), items, defaultCt)
+  // Reuse source. The server searches everything the user can see (own, team,
+  // public and the default library) when no project is named, so that is the
+  // default; a single project narrows it.
+  const sel = $('searchproject')
+  fillSelect(sel, items, null)
+  const all = document.createElement('option')
+  all.value = ''
+  all.textContent = 'Everything I can see'
+  sel.insertBefore(all, sel.firstChild)
+  sel.value = ''
+  searchProject = null
 }
+
+// --- Results in the panel: click to add, or drag onto the canvas. ---
+let resultRows = []
+function renderResults(rows) {
+  resultRows = rows
+  const box = $('results')
+  box.innerHTML = ''
+  box.hidden = !rows.length
+  rows.forEach((r, i) => {
+    const el = document.createElement('div')
+    el.className = 'result'
+    el.draggable = true
+    el.dataset.i = String(i)
+    el.title = r.description || r.label
+    const kind = r.type === 'cluster' ? 'Group' : (r.type === 'units' ? 'Units' : (r.type === 'referencerange' ? 'Range' : 'Field'))
+    el.innerHTML = `<span class="chip"></span><span class="result-label"></span><span class="result-add">${kind} · add</span>`
+    el.querySelector('.chip').textContent = badgeFor(r)
+    el.querySelector('.result-label').textContent = r.label
+    el.addEventListener('click', () => { $('createstatus').className = 'muted'; $('createstatus').textContent = addReusedToCanvas(r, null) })
+    el.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/x-sdcbench-result', String(i)); e.dataTransfer.effectAllowed = 'copy' })
+    box.appendChild(el)
+  })
+}
+function badgeFor(r) {
+  const b = { cluster: 'Group', units: 'Units', referencerange: 'Range' }[r.type]
+  return b || (window.__apiBadges && window.__apiBadges[r.type]) || r.type
+}
+;(function canvasDrop() {
+  const cv = $('blocklyDiv')
+  cv.addEventListener('dragover', (e) => { if ([...e.dataTransfer.types].includes('text/x-sdcbench-result')) { e.preventDefault(); cv.classList.add('droptarget') } })
+  cv.addEventListener('dragleave', () => cv.classList.remove('droptarget'))
+  cv.addEventListener('drop', (e) => {
+    cv.classList.remove('droptarget')
+    const i = e.dataTransfer.getData('text/x-sdcbench-result')
+    if (i === '') return
+    e.preventDefault()
+    const r = resultRows[Number(i)]
+    if (r) { $('createstatus').className = 'muted'; $('createstatus').textContent = addReusedToCanvas(r, { x: e.clientX, y: e.clientY }) }
+  })
+})()
 
 $('projects').addEventListener('change', (e) => { selectedProject = e.target.value || null })
 $('searchproject').addEventListener('change', (e) => {
@@ -215,7 +279,7 @@ $('libsearch').addEventListener('input', (e) => {
 async function runSearch(q) {
   const seq = ++libSeq
   $('libmsg').textContent = q ? 'Searching…' : ''
-  if (!q) { setReuseResults([]); return }
+  if (!q) { setReuseResults([]); renderResults([]); return }
   try {
     const rows = await searchComponents(q, searchProject)
     if (seq !== libSeq) return
@@ -224,14 +288,16 @@ async function runSearch(q) {
     // field); structural types (Party/Audit/…) have no place on the canvas.
     const list = all.filter((r) => canSearchAdd(r.type))
     setReuseResults(list)
+    renderResults(list)
     const hidden = all.length - list.length
     $('libmsg').textContent = list.length
-      ? `${list.length} component${list.length === 1 ? '' : 's'} — drag from the Reuse tab` +
-        (hidden ? ` (${hidden} not usable in a model hidden)` : '')
-      : (hidden ? `${hidden} match(es), but none can sit in a model.` : 'No published components match.')
+      ? `${list.length} published component${list.length === 1 ? '' : 's'}` +
+        (hidden ? ` (${hidden} more cannot sit in a model)` : '')
+      : (hidden ? `${hidden} match(es), but none can sit in a model.` : 'No published components match. Try another word, or widen "Search in".')
   } catch (err) {
     if (seq !== libSeq) return
     setReuseResults([])
+    renderResults([])
     $('libmsg').textContent = `${err}`
   }
 }
@@ -271,11 +337,12 @@ $('createbtn').addEventListener('click', async () => {
   // Cost = 500 credits model + 100 per new component (reused is free). Confirm first.
   await refreshWallet()
   const count = mintCount()
+  const { groups, fields } = mintBreakdown()
   const cost = ASSEMBLE_COST + MINT_COST * count
   const short = walletBalance != null && walletBalance < cost
   $('confirmcost').textContent = `${fmtCredits(cost)} credits`
   $('confirmdetail').textContent =
-    `${count} new component${count === 1 ? '' : 's'} × ${fmtCredits(MINT_COST)} + ${fmtCredits(ASSEMBLE_COST)} data model.` +
+    `${groups} new group${groups === 1 ? '' : 's'} and ${fields} new field${fields === 1 ? '' : 's'} at ${fmtCredits(MINT_COST)} each, plus ${fmtCredits(ASSEMBLE_COST)} for the data model.` +
     (walletBalance != null ? ` Wallet balance: ${fmtCredits(walletBalance)} credits.` : '') +
     ' Reused components are free.'
   const warn = $('confirmwarn')
@@ -311,7 +378,7 @@ async function doCreate(req, sig) {
     } else if (r.dm_ct_id) {
       lastCreatedSig = sig // only a fully-created model counts as "done"
       $('createstatus').className = 'muted ok'
-      $('createstatus').textContent = `✓ Draft model created — ${ok} component${ok === 1 ? '' : 's'}${bad ? `, ${bad} issue(s)` : ''}. Finalize and publish in SDCStudio.`
+      $('createstatus').textContent = `Draft model created: ${ok} component${ok === 1 ? '' : 's'}${bad ? `, ${bad} issue(s)` : ''}. Finalize and publish in SDCStudio.`
     } else {
       $('createstatus').className = 'muted warn'
       const first = (r.errors && r.errors[0]) ? ` (${r.errors[0].error})` : ''
@@ -336,7 +403,7 @@ $('savebtn').addEventListener('click', async () => {
   try {
     const path = await saveModel(name, saveState())
     $('createstatus').className = 'muted ok'
-    $('createstatus').textContent = `✓ Saved to ${path}`
+    $('createstatus').textContent = `Saved to ${path}`
     refreshDrafts(name) // surface the just-saved draft in the picker
   } catch (e) {
     $('createstatus').className = 'muted warn'
@@ -353,7 +420,7 @@ $('loadbtn').addEventListener('click', async () => {
   try {
     loadState(await readModel(name))
     $('createstatus').className = 'muted ok'
-    $('createstatus').textContent = `✓ Loaded "${name}".`
+    $('createstatus').textContent = `Loaded "${name}".`
   } catch (e) {
     $('createstatus').className = 'muted warn'
     $('createstatus').textContent = `${e}`

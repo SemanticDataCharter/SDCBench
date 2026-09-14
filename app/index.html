@@ -22,6 +22,7 @@
 
   <div id="workspace">
     <div id="blocklyDiv"></div>
+    <div id="canvashint" class="canvas-hint" hidden>Your model starts here. Search the library on the right and drag a component into <b>contains</b>, or drag a new Field from <b>New</b>.</div>
     <aside id="panel">
       <section class="panel-block">
         <h2>Reuse · Find components</h2>
@@ -29,14 +30,15 @@
           <label for="searchproject" class="muted">Search in</label>
           <select id="searchproject"></select>
         </div>
-        <input id="libsearch" type="text" placeholder="Search published components…" />
+        <input id="libsearch" type="text" placeholder="Search by meaning, for example: date of birth" />
         <p id="libmsg" class="muted"></p>
-        <p class="muted">Matches appear in the <b>Reuse</b> tab on the canvas — drag them in to reuse a published component.</p>
+        <div id="results" class="results" hidden></div>
+        <p class="muted">Drag a result onto the canvas, or click it to add it to the selected group. Reusing a published component is free.</p>
       </section>
 
       <section id="reqeditor" class="panel-block" hidden>
         <h2>Requirement · <span id="reqfor"></span></h2>
-        <textarea id="reqtext" rows="4" placeholder="What is this — units, normal/expected values, and any guideline (e.g. 'systolic BP in mmHg, adult normal <120, per ACC/AHA 2017'). This is handed to whoever finalizes it in SDCStudio."></textarea>
+        <textarea id="reqtext" rows="4" placeholder="What is this? Units, normal or expected values, and any guideline. For example: systolic BP in mmHg, adult normal below 120, per ACC/AHA 2017. This is what the modeler works from in SDCStudio."></textarea>
         <p class="muted">Select a new component on the canvas to describe it.</p>
       </section>
       <section class="panel-block">
@@ -44,7 +46,7 @@
         <p id="cvstatus" class="muted"></p>
         <div class="field">
           <label for="dmdesc" class="muted">Model description</label>
-          <textarea id="dmdesc" rows="2" placeholder="What this model captures — used when it's finalized in SDCStudio."></textarea>
+          <textarea id="dmdesc" rows="2" placeholder="What this model captures. Used when it is finalized in SDCStudio."></textarea>
         </div>
         <div class="row2">
           <select id="loadselect"><option value="">Saved drafts…</option></select>
@@ -56,7 +58,8 @@
         </div>
         <p id="createstatus" class="muted"></p>
         <details class="cv-preview">
-          <summary class="muted">Structure</summary>
+          <summary class="muted">Advanced</summary>
+          <p class="muted">The structure SDCBench will send, as a data modeler sees it.</p>
           <pre id="cvout"></pre>
         </details>
       </section>
@@ -67,12 +70,12 @@
   <div id="gate">
     <div class="gate-card">
       <h2>Sign in to SDCStudio</h2>
-      <p class="muted">SDCBench builds into your SDCStudio account. Sign in with your API key — it is stored in your OS keychain and never leaves this machine. You stay signed in until you sign out.</p>
+      <p class="muted">SDCBench builds into your SDCStudio account. Sign in with your API key. It is stored in your OS keychain and never leaves this machine. You stay signed in until you sign out.</p>
       <div class="gate-row">
         <input id="apikey" type="password" placeholder="SDCStudio API key" />
         <button id="usekey">Sign in</button>
       </div>
-      <p class="muted">No account yet? <a id="signuplink" href="#">Create an SDCStudio account →</a> Then copy your API key from Account Settings.</p>
+      <p class="muted">No account yet? <a id="signuplink" href="#">Create an SDCStudio account</a>, then copy your API key from Account Settings.</p>
       <p id="gatemsg" class="muted"></p>
     </div>
   </div>
