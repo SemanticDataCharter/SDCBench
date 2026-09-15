@@ -10,17 +10,18 @@ here is on the public repo's `dev` branch unless it says otherwise.*
 | Tutorial PRD, "The Pizza Order" | Draft 1 with Tim's decisions folded in | `docs/tutorial/PRD.md` |
 | Pizza ontology, v2.0, CC BY 3.0 | Downloaded, verified, upload fields written | `docs/tutorial/pizza.owl`, `docs/tutorial/PIZZA-ONTOLOGY.md` |
 | Usability review, pass one | Done, with before and after captures | `docs/UX-REVIEW-2026-09-14.md`, `docs/review/` |
-| Fix pass from that review | Built and verified with a mocked bridge | `app/` on `dev`; PR #1 (`dev` to `main`) |
+| Fix pass from that review | Built, verified with a mocked bridge, **merged to `main` in PR #1 (2026-09-14)** | `app/` |
 | Release guard: one VERSION file, canon tests and tag checks in CI | Built; checks job proven green on the runner | PR #2 (`ci-release-guard` to `dev`) |
 | The tutorial itself | Not started | will live in `pizza_tutorial/` at the repo root |
 
-## Open pull requests
+## Pull requests
 
-- **#1** `dev` to `main`: PRD, review, fix pass, ontology. The build workflow passed on it.
-- **#2** `ci-release-guard` to `dev`: VERSION file, `tools/set_version.py`, `checks` job. Merge
-  #2 into `dev` first, then #1 into `main`, or #1 first and then a second `dev` to `main`
-  PR. Either order works. Note the workflow only auto-runs on PRs to `main`; #2 was proven by
-  a manual dispatch on its branch.
+- **#1** `dev` to `main`: PRD, review, fix pass. **Merged 2026-09-14.** `dev` is synced.
+- **#2** `ci-release-guard` to `dev`: VERSION file, `tools/set_version.py`, `checks` job.
+  **Open.** The workflow only auto-runs on PRs to `main`; #2 was proven by a manual dispatch
+  on its branch.
+- **Not yet on `main`:** the ontology file and notes, and these resume notes, are on `dev`
+  after #1. They go up with #2 in the next `dev` to `main` PR.
 
 ## What only Tim can do, in order
 
@@ -32,8 +33,9 @@ here is on the public repo's `dev` branch unless it says otherwise.*
 2. **Upload the ontology once, as Public**, from Tim's production account, with the exact
    fields in `PIZZA-ONTOLOGY.md`. The semantic-link search then finds `pizza.owl#...Topping`
    for every modeler.
-3. **Merge #2 and #1**, then tag `v4.0.0-beta.3` on `main` after `python3 tools/set_version.py
-   4.0.0-beta.3`. The tag ships the fix pass through CI to a GitHub Release.
+3. **Merge #2 into `dev`, then open and merge `dev` to `main`**, then tag `v4.0.0-beta.3`
+   on `main` after `python3 tools/set_version.py 4.0.0-beta.3`. The tag ships the fix pass
+   through CI to a GitHub Release.
 
 ## Then the bench picks up here
 
