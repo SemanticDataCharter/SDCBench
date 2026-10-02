@@ -33,7 +33,9 @@ import xml.etree.ElementTree as ET
 
 XSD_NS = "http://www.w3.org/2001/XMLSchema"
 NS = {"xsd": XSD_NS}
-DEFAULT_XSD = "/home/twcook/GitHub/SDCRM/sdc4/schemas/sdc4.xsd"
+# The SDC4 reference model schema. Override with SDCRM_XSD (CI checks out the
+# public SemanticDataCharter/SDCRM repo at a pinned tag and points here).
+DEFAULT_XSD = os.environ.get("SDCRM_XSD", "/home/twcook/GitHub/SDCRM/sdc4/schemas/sdc4.xsd")
 DEFAULT_OUT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "canon", "composition-model.json"))
 
