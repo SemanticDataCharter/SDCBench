@@ -17,11 +17,22 @@ You sign in with your SDCStudio API key, then:
   canvas, where blocks only snap where the reference model allows.
 - **Sketch a new component** only when nothing fits: pick a plain data type (Text,
   Integer, Decimal, Date, Code, …) and write a plain-language **requirement**.
+- **Play the first game**: eleven guided moves that build a small model, the next move lit.
 - **Send to SDCStudio**: it creates a draft data model in your project, referencing
   reused components and creating new ones as drafts.
 
 A data modeler then finalizes the constraints, units, reference ranges, and semantic
 bindings, and publishes, in SDCStudio.
+
+## What it looks like
+
+| The welcome, with the first game | A model, reused pieces and sketched ones |
+|---|---|
+| ![The empty board: the mark, the first two moves, the first game's button](docs/review/2026-10-02/desktop-welcome-thumb.png) | ![The pizza order on the board, the panel's three cards](docs/review/2026-10-02/desktop-model-thumb.png) |
+
+Light by default, dark with the system setting; one layout from an iPad in portrait to a
+desktop. The full set of states is in `docs/review/2026-10-02/`. The **first game** builds
+the pizza order in eleven moves with the next move lit, and is the fastest way in.
 
 ## The separation line
 

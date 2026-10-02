@@ -12,6 +12,15 @@ A **draft data model** in your SDCStudio project, plus a plain-language
 SDCStudio and finishes it: adding the precise constraints, units, and reference
 ranges, and publishing it.
 
+## The first game
+
+The quickest way to learn the bench is to play its first game: a pizza order built in
+eleven moves, each one shown and the next thing to touch lit up. Click **Play the first
+game** on the empty board, or **First game** in the header, at any time. About ten
+minutes. You can skip a move or quit, and the game resumes where you left it the next
+time you open the bench. It ends at the cost card: accept to create the draft, or cancel
+and keep building.
+
 ## 1. Sign in
 
 SDCBench signs in with your **SDCStudio API key**.
@@ -36,14 +45,15 @@ Two selectors, and they can be different projects:
 
 ## 3. Find and reuse components
 
-Reuse is the main way you build. In the **Reuse** panel, search by meaning, for
+Reuse is the main way you build. In **Find a component**, search by meaning, for
 example "blood pressure" or "date of birth", not by any technical type.
 
 - Matches appear as a list under the search box.
 - **Hover** a match to read its description so you know what it is.
 - **Click** a match to add it to the selected group (or the root group), or **drag** it
   onto the canvas. Reused blocks carry a small **reused** pill.
-- The **Reuse** tab on the canvas holds the same matches if you prefer to drag from there.
+- The **Reuse** tile on the left holds the same matches if you prefer to drag from there.
+- **in** narrows the search to one project; it starts on everything you can see.
 
 Reusing a published component is always better than making a new one: it keeps your
 model consistent with everyone else's and saves the modeler work.
@@ -88,17 +98,18 @@ describe them.
 
 ## 7. Save and reopen a draft
 
-- **Save draft locally** writes your work to a file on this machine (under a SDCBench
-  folder in your home or documents directory). It is not sent anywhere.
-- **Saved drafts** lists your local files; pick one and click **Load** to reopen it
-  on the canvas exactly as you left it.
+- **Save draft** writes your work to a file on this machine (under a SDCBench folder in
+  your home or documents directory). It is not sent anywhere.
+- **More** shows **Saved drafts**: pick one and click **Load** to reopen it on the board
+  exactly as you left it.
 
 ## 8. Create the draft model
 
 When your model is ready:
 
-1. Write a short **Model description**.
-2. Click **Create draft model**.
+1. Write one or two sentences under **What this model captures**.
+2. Click **Send to SDCStudio**. The cost card shows what will be charged, with reused
+   components free, before anything is created.
 
 SDCBench creates the draft in your **Building in** project: your reused components are
 referenced, your new components are created as drafts with their requirements, and
@@ -113,8 +124,11 @@ knowledge lives; SDCBench got you the structure and the intent.
 
 ## Advanced
 
-The **Advanced** disclosure in the panel shows the structure SDCBench will send, the way
-a data modeler sees it. You never need it to build a model.
+Under **More**, the **Advanced** disclosure shows the structure SDCBench will send, the
+way a data modeler sees it. You never need it to build a model.
+
+The bench follows your system's light or dark setting. On a tablet, or in a narrow
+window, the panel sits along the bottom edge: drag or tap its handle to open it.
 
 ## Tips
 

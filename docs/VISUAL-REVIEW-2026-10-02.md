@@ -72,3 +72,18 @@ Ships as 4.0.0-beta.3. Android through Tauri 2 follows the desktop release and n
 3. **The mark on the empty canvas**: faint and large behind the welcome line. Taken.
 4. **Blockly's zoom and trash**: ours. Taken.
 5. **Order**: A to E as in the second table.
+
+
+## Built, 2026-10-02
+
+Passes A to E are on `dev`, in four commits, and the states are captured in `docs/review/2026-10-02/` (desktop welcome, model, first game, sign-in, dark; iPad landscape and portrait). Measured against the five observations at the top:
+
+1. Light by default on the house ground; dark by the OS setting from the same tokens, and a `data-theme` override.
+2. Blockly's toolbox is two tiles, its zoom and trash are gone and the board's three controls are ours, the grid is a quiet texture, the flyout is white; the pieces rest with a shadow and lift when dragged.
+3. Inter for text, Newsreader for the sign-in heading, the welcome, the help headings and the coach's step titles, JetBrains Mono for the version and the step count.
+4. The mark in the header, on the sign-in card, faint and large behind the welcome.
+5. The panel is three cards with one primary button; the search box is the largest control; the rare controls are behind More.
+
+And the two decisions: one layout from an iPad in portrait (the panel a sheet with a handle) to a desktop, and the first game in this release, eleven moves ending at the cost card.
+
+Not done, deliberately: the drag feel and the sheet's touch behavior were checked in a desktop browser at iPad sizes, not on an iPad; Tim at the keyboard on the real build (and a tablet when one is to hand) is pass two of this review, as it was in September. The written tutorial (`docs/tutorial/`) stays the reference and still waits on its own PR.
