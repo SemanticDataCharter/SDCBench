@@ -461,6 +461,8 @@ function updateReqEditor(id) {
 // --- Public API ---
 export function initCanvas() {
   if (ws) { Blockly.svgResize(ws); return }
+  Blockly.config.snapRadius = 48   // a piece dropped near a slot joins it; the default asks for more precision than a finger has
+  Blockly.config.connectingSnapRadius = 68
   ws = Blockly.inject('blocklyDiv', {
     toolbox,
     theme: themeForScheme(),
@@ -497,6 +499,10 @@ export function initCanvas() {
     }
     // If the block being edited was removed, close the editor.
     if (currentReqBlock && !ws.getBlockById(currentReqBlock.id)) updateReqEditor(null)
+    // A units piece left floating over a number field after a drag or a drop joins its slot.
+    if (e?.type === Blockly.Events.BLOCK_MOVE || e?.type === Blockly.Events.BLOCK_CREATE || (e?.type === Blockly.Events.BLOCK_DRAG && !e.isStart)) {
+      ws.getBlocksByType('sdc_units_reused', false).filter((b) => !b.getParent()).forEach(attachFloatingUnits)
+    }
     refresh()
   })
   // Edit the selected new component's requirement (FR-13).
@@ -512,7 +518,7 @@ export function resizeCanvas() { if (ws) Blockly.svgResize(ws) }
 export const workspace = () => ws   // for scripted review in the browser; the app does not use it
 export function selectForEditing(blockId) { lastSelectedId = blockId; updateReqEditor(blockId) }   // the same, for a scripted click
 
-// What is on the board, for the guided first game: the model's name, every group
+// What is on the board, for the guided tutorial: the model's name, every group
 // (name, reused, parent group) and every field (name, kind, units label, requirement, group).
 export function snapshot() {
   const out = { model: '', groups: [], fields: [] }
@@ -571,9 +577,29 @@ function targetGroup() {
   if (!b) { const m = ws.getTopBlocks(false).find((x) => x.type === 'sdc_model'); b = m && m.getInputTargetBlock('ROOT') }
   return b || null
 }
-function targetField(check) {
+function targetField(check, at) {
+  // The field under the drop point first, then the selected block.
+  const under = at ? fieldAt(at, check) : null
+  if (under) return under
   const b = selectedBlock()
   return (b && b.type === 'sdc_field' && check(b.getFieldValue('KIND'))) ? b : null
+}
+// The sketched field whose piece contains a client point (a drop), among those passing `check`.
+function fieldAt(at, check) {
+  const p = Blockly.utils.svgMath.screenToWsCoordinates(ws, new Blockly.utils.Coordinate(at.x, at.y))
+  const hits = ws.getBlocksByType('sdc_field', false).filter((b) => check(b.getFieldValue('KIND')) && b.getBoundingRectangle().contains(p.x, p.y))
+  return hits.sort((a, b) => a.getBoundingRectangle().getWidth() * a.getBoundingRectangle().getHeight() - b.getBoundingRectangle().getWidth() * b.getBoundingRectangle().getHeight())[0] || null
+}
+// A units piece dropped on a number field but not into its slot sits on top of it; attach it.
+function attachFloatingUnits(u) {
+  if (!u || u.type !== 'sdc_units_reused' || u.getParent() || u.isShadow()) return
+  const r = u.getBoundingRectangle()
+  const field = ws.getBlocksByType('sdc_field', false).find((b) => QUANTIFIED.has(b.getFieldValue('KIND')) && b.getInput('UNITS') && b.getBoundingRectangle().intersects(r))
+  if (!field) return
+  const slot = field.getInput('UNITS').connection
+  const held = slot.targetBlock()
+  if (held && !held.isShadow()) return   // the slot is taken by a real units piece
+  slot.connect(u.outputConnection)
 }
 /**
  * Add a published component to the model. `at` is a client point (a drop) or null
@@ -584,14 +610,14 @@ export function addReusedToCanvas(r, at) {
   if (!ws) return 'Canvas not ready.'
   const state = blockStateFor(r)
   if (r.type === 'units') {
-    const f = targetField((k) => QUANTIFIED.has(k))
-    if (!f) return 'Select a number field first, then add the units.'
+    const f = targetField((k) => QUANTIFIED.has(k), at)
+    if (!f) return 'Drop the units on a number field, or select one first and click the units.'
     const u = Blockly.serialization.blocks.append(state, ws)
     f.getInput('UNITS').connection.connect(u.outputConnection)
     return `Units "${r.label}" set on ${f.getFieldValue('NAME')}.`
   }
   if (r.type === 'referencerange') {
-    const f = targetField((k) => ORDERED_OR_QUANT.has(k))
+    const f = targetField((k) => ORDERED_OR_QUANT.has(k), at)
     if (!f) return 'Select a number, date or ranked field first, then add the range.'
     f.showRanges_()
     const rb = Blockly.serialization.blocks.append(state, ws)
@@ -635,7 +661,7 @@ export function resetCanvas() {
 export function saveState() {
   return JSON.stringify({
     app: 'SDCBench',
-    version: '4.0.0b3',
+    version: '4.0.0b4',
     model: draftPayload(),
     workspace: Blockly.serialization.workspaces.save(ws),
   }, null, 2)

@@ -12,14 +12,13 @@ A **draft data model** in your SDCStudio project, plus a plain-language
 SDCStudio and finishes it: adding the precise constraints, units, and reference
 ranges, and publishing it.
 
-## The first game
+## The tutorial
 
-The quickest way to learn the bench is to play its first game: a pizza order built in
-eleven moves, each one shown and the next thing to touch lit up. Click **Play the first
-game** on the empty board, or **First game** in the header, at any time. About ten
-minutes. You can skip a move or quit, and the game resumes where you left it the next
-time you open the bench. It ends at the cost card: accept to create the draft, or cancel
-and keep building.
+The quickest way to learn the bench is its tutorial: a pizza order built in nine moves,
+each one shown and the next thing to touch lit up. Click **Start the tutorial** on the
+empty board, or **Tutorial** in the header, at any time. About ten minutes. You can skip
+a move or quit, and it resumes where you left it the next time you open the bench. It
+ends at the cost card: accept to create the draft, or cancel and keep building.
 
 ## 1. Sign in
 

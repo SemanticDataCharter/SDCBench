@@ -16,10 +16,9 @@ const SAMPLE_WORKSPACE = { blocks: { blocks: [{
       rgroup(reused('c01', 'cluster', 'Full Name (Person)')), rfield(reused('c05', 'xdstring', 'Phone Number')), rfield(reused('c06', 'xdstring', 'Email Address')), rgroup(reused('c09', 'cluster', 'US Address')),
     ]) } } },
     { type: 'sdc_group', fields: { NAME: 'Pizza' }, inputs: { ITEMS: { block: chain([
-      field('Size', 'XdTokenType', 'Small, medium or large.'),
+      field('Size', 'XdCountType', 'The pizza across, in inches, 10 to 18.', { inputs: { UNITS: { block: { type: 'sdc_units_reused', data: JSON.stringify({ ct_id: 'c08', type: 'units' }), fields: { LABEL: 'Length/Distance (SI - Metric)' } } } } }),
       field('Crust', 'XdTokenType', ''),
       field('Toppings', 'XdTokenType', ''),
-      field('Diameter', 'XdQuantityType', '', { inputs: { UNITS: { block: { type: 'sdc_units_reused', data: JSON.stringify({ ct_id: 'c08', type: 'units' }), fields: { LABEL: 'Length/Distance (SI - Metric)' } } } } }),
       rfield(reused('c10', 'xdboolean', 'Yes/No Indicator')),
       field('Quantity', 'XdCountType', '', { inputs: { UNITS: { shadow: { type: 'sdc_units_empty' } } } }),
     ]) } } },
