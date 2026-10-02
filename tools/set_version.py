@@ -6,9 +6,10 @@ One version, written everywhere it has to appear.
     python3 tools/set_version.py 4.0.0-beta.3     write VERSION and every derived place
 
 VERSION holds the semver form (4.0.0-beta.3). Two files show it in the short
-"4.0.0b3" form that fits a window title. The six derived places are the ones the
-README used to ask a human to edit by hand, which is how a tag and a window title
-came to disagree.
+"4.0.0b3" form (the health badge and the saved-draft stamp). The derived places are
+the ones the README used to ask a human to edit by hand, which is how a tag and a
+window title came to disagree. The window title is "SDCBench" since the visual
+refresh and carries no version; Help shows it.
 """
 import json
 import pathlib
@@ -35,7 +36,6 @@ def short(v):
 PLACES = [
     ("app/package.json", r'("version":\s*")([^"]+)(")', lambda v: v),
     ("app/src-tauri/tauri.conf.json", r'("version":\s*")([^"]+)(")', lambda v: v),
-    ("app/src-tauri/tauri.conf.json", r'("title":\s*"SDCBench )([^"]+)(")', short),
     ("app/src-tauri/Cargo.toml", r'(^version = ")([^"]+)(")', lambda v: v),
     ("app/src-tauri/Cargo.lock", r'(name = "sdcbench"\nversion = ")([^"]+)(")', lambda v: v),
     ("app/src/main.js", r"(const VERSION = ')([^']+)(')", short),

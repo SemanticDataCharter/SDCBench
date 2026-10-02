@@ -21,7 +21,7 @@ const fmtCredits = (n) => Number(n).toLocaleString('en-US')
 import guideMd from '../../docs/USER-GUIDE.md?raw'
 import { initGame, startGame, gameDone, gameResumeStep } from './game.js'
 
-const VERSION = '4.0.0b2'
+const VERSION = '4.0.0b3'
 
 const $ = (id) => document.getElementById(id)
 // Review hooks, only with ?mock: scripted drives of the board from the browser console.
