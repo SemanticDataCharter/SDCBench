@@ -1,6 +1,7 @@
 # SDCBench visual review, pass two
 
-**Date:** 2026-10-02. **Build reviewed:** the `dev` branch after PR #1 (the September fix pass), read in full: `index.html`, `style.css`, `main.js`, `canvas.js`, the Tauri window config, the canon, the September screenshots in `docs/review/`. Compared against the two places a domain expert comes from: the company site (`axius-sdc.com`: off-white ground, Inter for text, Newsreader for headings, JetBrains Mono for identifiers, navy, teal and gold) and the SDCStudio web application (Inter, the same palette as design tokens, light with a dark variant, shadcn cards). **The brief, from Tim:** some of the UI looks old; this is the front door to domain experts.
+**Date:** 2026-10-02.  
+**Build reviewed:** the `dev` branch after PR #1 (the September fix pass), read in full: `index.html`, `style.css`, `main.js`, `canvas.js`, the Tauri window config, the canon, the September screenshots in `docs/review/`. Compared against the two places a domain expert comes from: the company site (`axius-sdc.com`: off-white ground, Inter for text, Newsreader for headings, JetBrains Mono for identifiers, navy, teal and gold) and the SDCStudio web application (Inter, the same palette as design tokens, light with a dark variant, shadcn cards). **The brief, from Tim:** some of the UI looks old; this is the front door to domain experts.
 
 Pass one (`UX-REVIEW-2026-09-14.md`) fixed the flow: search beside results, the empty-canvas hint, the reused pill, the requirement warning, the advanced disclosure. The look it left is a competent dark developer tool. This pass is about the look, and the verdict is that the bench does not yet look like it belongs to the two things it sits between.
 
@@ -46,10 +47,28 @@ Concretely:
 
 Pass A changes the first impression by itself; B removes the Scratch feeling; C is where the panel stops looking like a form. All three fit in the beta line as 4.0.0-beta.3, which is the tag the parked tutorial work is waiting for anyway.
 
-## Decisions for Tim
+## Decisions taken, 2026-10-02
 
-1. **Light by default, dark by OS setting.** Recommended, since both siblings are light. The alternative is a dark default with a light option.
-2. **Newsreader for the few display lines**, or Inter alone. Recommended: Newsreader, because the site uses it and it is the one thing that separates a bench from a tool.
-3. **The mark on the empty canvas**: faint and large behind the welcome line, or small beside it. Recommended: faint and large; it is the only place the logo has room.
-4. **Blockly's zoom and trash**: replace with ours, or keep stock. Recommended: ours; they are the most Scratch-like pixels on the screen.
-5. **Order**: A, B, C as above, or C first if the panel bothers you more than the color.
+Tim: "I'm thinking along the lines of a boardgame app that you might see on a mobile app store", and then **tablet-first with desktop fit, guided first game in this release.** That changes the direction in three ways and the passes below replace the table above.
+
+- **The feel is a well-made tabletop app:** pieces that lift and snap, a board that is a surface rather than a grid, everything large enough to touch, one thing to do at a time. Calm and exact stays the rule for the palette and the type; tactility is how the pieces move, not how they look.
+- **One layout, tablet-first, desktop-fit.** Designed for an iPad in landscape (1024 wide) and up: the panel is a bottom sheet under about 900 pixels wide and docks right above it; the palette is a tray; every target is 44 pixels; the requirement editor is a sheet. Tested in the browser at iPad size before any store account exists. A phone build is a different, smaller product and is not planned.
+- **The guided first game** runs the pizza model inside the app with the next move highlighted, as the first-run path. The written tutorial stays as the reference.
+
+| Pass | What | Effort |
+|---|---|---|
+| A | Tokens, the three fonts, the mark, light by default and dark by OS setting, the responsive skeleton (sheet under 900 px), the header and sign-in card | half a day |
+| B | The board and the pieces: our palette tray and zoom controls, the grid off, the flyout and scrollbars ours, lift and snap feedback on drag, the root block navy, touch targets | one day |
+| C | The panel as three cards, the empty-canvas welcome, the help drawer, the confirm card, the sheet behavior on a tablet | one day |
+| D | The guided first game: the pizza model as a scripted sequence of moves with the next move highlighted and the panel's prompt per step, skippable, resumable | two days |
+| E | Screenshots of the states at desktop and iPad size, the user guide's figures, a before-and-after row for the README | half a day |
+
+Ships as 4.0.0-beta.3. Android through Tauri 2 follows the desktop release and needs no new hardware; iOS lands with macOS when a Mac does.
+
+## Decisions for Tim (the earlier five, as answered)
+
+1. **Light by default, dark by OS setting.** Taken.
+2. **Newsreader for the few display lines.** Taken.
+3. **The mark on the empty canvas**: faint and large behind the welcome line. Taken.
+4. **Blockly's zoom and trash**: ours. Taken.
+5. **Order**: A to E as in the second table.

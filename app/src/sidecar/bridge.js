@@ -1,6 +1,22 @@
 // Bridge to the Rust shell. Every frontend call to the backend goes through this
 // module; the API token stays in Rust/keychain and never reaches the webview (D3).
-import { invoke } from '@tauri-apps/api/core'
+import { invoke as tauriInvoke } from '@tauri-apps/api/core'
+import * as mock from './mock.js'
+
+// In a browser with no Tauri shell and `?mock` in the URL, every command answers
+// from the canned bridge (visual review, screenshots). Inside the app, Tauri answers.
+const useMock = typeof window !== 'undefined' && !('__TAURI_INTERNALS__' in window) && new URLSearchParams(window.location.search).has('mock')
+const invoke = useMock
+  ? (cmd, args = {}) => {
+      const fn = {
+        health: mock.health, sign_in: () => mock.signIn(args.token), whoami: mock.whoami, auth_status: mock.authStatus,
+        sign_out: mock.signOut, list_projects: mock.listProjects, wallet: mock.getWallet, open_studio: () => mock.openStudio(args.path),
+        save_model: () => mock.saveModel(args.name, args.content), list_models: mock.listModels, read_model: () => mock.readModel(args.name),
+        search_components: () => mock.searchComponents(args.query, args.project), create_model: () => mock.createModel(args.payload),
+      }[cmd]
+      return fn ? fn() : Promise.reject(new Error(`no mock for ${cmd}`))
+    }
+  : tauriInvoke
 
 export const health = () => invoke('health')
 

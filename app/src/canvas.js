@@ -47,10 +47,10 @@ nk.Field.rm_types.forEach((rm) => {
 // House palette. One colour for data, whatever its family: the type badge on the
 // block face carries the distinction, and three greens did not read as three.
 const COL = {
-  entry: '#2ca58d',    // data (every Xd* leaf)
-  group: '#3b5578',    // container (Cluster)
+  entry: '#2ca58d',    // data (every Xd* leaf): the teal accent
+  group: '#3d5784',    // container (Cluster): the mid navy
   attach: '#f0a500',   // attachments (Units, ReferenceRange): the signal colour
-  model: '#5b6ee1',    // the DM root
+  model: '#0a2342',    // the DM root: the navy that frames everything
 }
 function dataColour(rm) { return COL.entry }
 // A small SVG pill used as a block-face marker for reuse. Colour is reserved for the
@@ -211,20 +211,48 @@ const toolbox = {
   ],
 }
 
-const theme = Blockly.Theme.defineTheme('sdcdark', {
+// Two themes from the house tokens; the OS setting picks one (see initCanvas).
+const FONT = { family: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", weight: '500', size: 12 }
+const themeLight = Blockly.Theme.defineTheme('sdclight', {
   base: Blockly.Themes.Classic,
   componentStyles: {
-    workspaceBackgroundColour: '#050b14',
-    toolboxBackgroundColour: '#0a1a30',
-    flyoutBackgroundColour: '#0b1f3a',
+    workspaceBackgroundColour: '#f7f9fb',
+    toolboxBackgroundColour: '#ffffff',
+    toolboxForegroundColour: '#0a2342',
+    flyoutBackgroundColour: '#ffffff',
+    flyoutForegroundColour: '#0a2342',
+    flyoutOpacity: 1,
+    scrollbarColour: '#c5cedb',
+    insertionMarkerColour: '#2ca58d',
+    insertionMarkerOpacity: 0.5,
+    cursorColour: '#2ca58d',
+  },
+  fontStyle: FONT,
+})
+const themeDark = Blockly.Theme.defineTheme('sdcdark', {
+  base: Blockly.Themes.Classic,
+  componentStyles: {
+    workspaceBackgroundColour: '#0b1626',
+    toolboxBackgroundColour: '#12213a',
+    toolboxForegroundColour: '#e8eef6',
+    flyoutBackgroundColour: '#12213a',
     flyoutForegroundColour: '#e8eef6',
+    flyoutOpacity: 1,
     scrollbarColour: '#2a3a55',
     insertionMarkerColour: '#2ca58d',
     insertionMarkerOpacity: 0.5,
     cursorColour: '#2ca58d',
   },
-  fontStyle: { family: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', weight: '500', size: 11 },
+  fontStyle: FONT,
 })
+const darkQuery = (typeof window !== 'undefined' && window.matchMedia) ? window.matchMedia('(prefers-color-scheme: dark)') : null
+// The html element's data-theme wins over the OS setting (review and user override).
+const isDark = () => {
+  const forced = typeof document !== 'undefined' ? document.documentElement.dataset.theme : ''
+  return forced ? forced === 'dark' : !!(darkQuery && darkQuery.matches)
+}
+const themeForScheme = () => (isDark() ? themeDark : themeLight)
+const gridColour = () => (isDark() ? '#16263f' : '#e1e6ea')
 
 let ws = null
 let reuseRows = []
@@ -437,14 +465,16 @@ export function initCanvas() {
   if (ws) { Blockly.svgResize(ws); return }
   ws = Blockly.inject('blocklyDiv', {
     toolbox,
-    theme,
+    theme: themeForScheme(),
     renderer: 'zelos', // rounded, quieter connectors than the classic puzzle notches
     media: '/blockly-media/',
-    trashcan: true, // dragging off to the left still works; the can is the visible way
+    trashcan: true, // dragging off to the left still works; the can is the visible way (ours in pass B)
     scrollbars: true,
-    zoom: { controls: true, wheel: false, startScale: 0.9 },
-    grid: { spacing: 24, length: 2, colour: '#12213a', snap: true },
+    zoom: { controls: true, wheel: false, startScale: 1.0 },
+    grid: { spacing: 24, length: 2, colour: gridColour(), snap: true },
   })
+  // Follow the OS setting while the app is open.
+  if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener('change', () => { ws.setTheme(themeForScheme()) })
   ws.registerToolboxCategoryCallback('REUSE', reuseFlyout)
   ws.addChangeListener((e) => {
     // Colour a freshly-dropped reused field by its data family (its ct_id/type is

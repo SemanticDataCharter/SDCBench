@@ -8,8 +8,8 @@
 </head>
 <body>
   <header>
-    <h1>SDCBench</h1>
-    <span id="health" class="badge">checking…</span>
+    <a class="brand" href="#" aria-label="SDCBench"><img src="/brand/mark-128.png" alt="" /><h1>SDCBench</h1></a>
+    <span id="health" class="badge" hidden></span>
     <div class="grow"></div>
     <button id="helpbtn" class="ghost">Help</button>
     <div id="session" class="session" hidden>
@@ -69,6 +69,7 @@
   <!-- Login gate: shown over the canvas until signed in. API key only. -->
   <div id="gate">
     <div class="gate-card">
+      <img class="gate-mark" src="/brand/mark-512.png" alt="" />
       <h2>Sign in to SDCStudio</h2>
       <p class="muted">SDCBench builds into your SDCStudio account. Sign in with your API key. It is stored in your OS keychain and never leaves this machine. You stay signed in until you sign out.</p>
       <div class="gate-row">
@@ -98,7 +99,7 @@
   <div id="help" class="hidden">
     <div class="help-card">
       <div class="help-head">
-        <h2>SDCBench Help</h2>
+        <div><h2>SDCBench Help</h2><span id="version" class="badge"></span></div>
         <button id="helpclose" class="ghost">Close</button>
       </div>
       <div id="helpbody" class="help-body"></div>

@@ -23,6 +23,11 @@ import guideMd from '../../docs/USER-GUIDE.md?raw'
 const VERSION = '4.0.0b2'
 
 const $ = (id) => document.getElementById(id)
+// `?scheme=light|dark` forces the theme (review and screenshots); otherwise the OS decides.
+{
+  const scheme = new URLSearchParams(location.search).get('scheme')
+  if (scheme === 'light' || scheme === 'dark') document.documentElement.dataset.theme = scheme
+}
 const gate = (show) => $('gate').classList.toggle('hidden', !show)
 
 // --- Help: render the bundled user guide (offline) and toggle the overlay ---
@@ -70,13 +75,12 @@ $('helpclose').addEventListener('click', () => showHelp(false))
 $('help').addEventListener('click', (e) => { if (e.target === $('help')) showHelp(false) })
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') showHelp(false) })
 
-// --- Health badge (proves the shell<->bridge wiring) ---
+// --- Health (proves the shell<->bridge wiring). The version lives in Help; the
+// header badge appears only when the bridge is broken. ---
+$('version').textContent = VERSION
 health()
-  .then((h) => {
-    $('health').textContent = `${h.app} ${VERSION}`
-    $('health').className = 'badge'
-  })
-  .catch((e) => { $('health').textContent = `bridge error: ${e}`; $('health').className = 'badge err' })
+  .then(() => { $('health').hidden = true })
+  .catch((e) => { $('health').textContent = `bridge error: ${e}`; $('health').className = 'badge err'; $('health').hidden = false })
 
 // --- Session ---
 let me = null
