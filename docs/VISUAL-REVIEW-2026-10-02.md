@@ -87,3 +87,5 @@ Passes A to E are on `dev`, in four commits, and the states are captured in `doc
 And the two decisions: one layout from an iPad in portrait (the panel a sheet with a handle) to a desktop, and the first game in this release, eleven moves ending at the cost card.
 
 Not done, deliberately: the drag feel and the sheet's touch behavior were checked in a desktop browser at iPad sizes, not on an iPad; Tim at the keyboard on the real build (and a tablet when one is to hand) is pass two of this review, as it was in September. The written tutorial (`docs/tutorial/`) stays the reference and still waits on its own PR.
+
+**2026-10-02, after Tim's keyboard pass on beta.3:** "The new UI looks great." Three corrections: the in-app walk-through is the **tutorial**, not a game (the word was a concept, not a name); Size is an Integer (a Count) with units, so the Diameter moves are gone and the tutorial is nine moves; and a Units piece dropped on a number field now joins its slot whether it was dropped from the panel (the field under the pointer is found) or from the Reuse tile (a piece left floating over a field attaches itself, and the snap radius is wider for a finger).

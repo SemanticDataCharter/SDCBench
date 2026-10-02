@@ -19,9 +19,9 @@ const MINT_COST = 100
 const ASSEMBLE_COST = 500
 const fmtCredits = (n) => Number(n).toLocaleString('en-US')
 import guideMd from '../../docs/USER-GUIDE.md?raw'
-import { initGame, startGame, gameDone, gameResumeStep } from './game.js'
+import { initTutorial, startTutorial, tutorialDone, tutorialResumeStep } from './tutorial.js'
 
-const VERSION = '4.0.0b3'
+const VERSION = '4.0.0b4'
 
 const $ = (id) => document.getElementById(id)
 // Review hooks, only with ?mock: scripted drives of the board from the browser console.
@@ -120,10 +120,10 @@ async function onConnected(info) {
   initCanvas()
   resizeCanvas()
   refreshDrafts()
-  // The first game resumes where it was left; a finished one waits for the button.
-  const resume = gameResumeStep()
-  if (resume !== null && !gameDone()) startGame(resume)
-  else if (new URLSearchParams(location.search).has('game')) startGame(0)   // review: open on the first move
+  // The tutorial resumes where it was left; a finished one waits for the button.
+  const resume = tutorialResumeStep()
+  if (resume !== null && !tutorialDone()) startTutorial(resume)
+  else if (new URLSearchParams(location.search).has('tutorial')) startTutorial(0)   // review: open on the first move
   // Review only: `?mock&sample` opens the pizza model so the filled board can be seen.
   if (new URLSearchParams(location.search).has('sample') && info?.sample_workspace) {
     loadState(JSON.stringify({ app: 'SDCBench', model: null, workspace: info.sample_workspace }))
@@ -472,7 +472,7 @@ $('sheethandle').addEventListener('click', () => { $('panel').classList.toggle('
 narrow.addEventListener('change', layoutSheet)
 layoutSheet()
 
-initGame()
+initTutorial()
 $('zoomin').addEventListener('click', zoomIn)
 $('zoomout').addEventListener('click', zoomOut)
 $('zoomfit').addEventListener('click', zoomFit)

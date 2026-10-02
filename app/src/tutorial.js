@@ -1,12 +1,12 @@
-// The guided first game: the pizza order built one move at a time, with the next move
+// The guided tutorial: the pizza order built one move at a time, with the next move
 // shown and highlighted. Each step is a prompt, a target to light up, and a check on
-// the live state; the game advances the moment the check passes. Skippable and
+// the live state; the tutorial advances the moment the check passes. Skippable and
 // resumable (the step is kept in localStorage); nothing here changes the model for
-// the player, it only watches and points.
+// the learner, it only watches and points.
 import { snapshot } from './canvas.js'
 
-const KEY_STEP = 'sdcbench.firstGame.step'
-const KEY_DONE = 'sdcbench.firstGame.done'
+const KEY_STEP = 'sdcbench.tutorial.step'
+const KEY_DONE = 'sdcbench.tutorial.done'
 const $ = (id) => document.getElementById(id)
 const has = (s, re) => !!s && re.test(s)
 
@@ -41,33 +41,21 @@ export const STEPS = [
   },
   {
     title: 'Sketch a field',
-    prompt: 'Drag a <b>Field</b> from <b>New</b> into the Pizza group. Name it <b>Size</b> and choose <b>Code</b> as its type.',
+    prompt: 'Drag a <b>Field</b> from <b>New</b> into the Pizza group. Name it <b>Size</b> and choose <b>Integer</b> as its type: a number carries a units slot.',
     target: '.blocklyToolboxCategoryContainer:first-child',
-    check: (snap) => { const f = field(snap, /size/i); return !!f && f.kind === 'XdTokenType' && has(f.group, /pizza/i) },
+    check: (snap) => { const f = field(snap, /size/i); return !!f && f.kind === 'XdCountType' && has(f.group, /pizza/i) },
   },
   {
     title: 'Say what it is',
-    prompt: 'With <b>Size</b> selected, write what it is in <b>Describe</b>: <i>small, medium or large</i>. The data modeler works from this.',
+    prompt: 'With <b>Size</b> selected, write what it is in <b>Describe</b>: <i>the pizza across, in inches, 10 to 18</i>. The data modeler works from this.',
     target: '#reqtext',
     check: (snap) => { const f = field(snap, /size/i); return !!f && f.requirement.trim().length > 3 },
   },
   {
-    title: 'A number',
-    prompt: 'Add another <b>Field</b> to Pizza: name it <b>Diameter</b> and choose <b>Decimal</b>. A number carries a units slot.',
-    target: '.blocklyToolboxCategoryContainer:first-child',
-    check: (snap) => { const f = field(snap, /diameter/i); return !!f && f.kind === 'XdQuantityType' },
-  },
-  {
     title: 'Reuse its units',
-    prompt: 'Select <b>Diameter</b>, search for <b>length</b>, and click the <b>Units</b> result. Published units are reused, never typed.',
+    prompt: 'Search for <b>length</b> and drop the <b>Units</b> result onto <b>Size</b>, or click it with Size selected. Published units are reused, never typed.',
     target: '#libsearch',
-    check: (snap) => { const f = field(snap, /diameter/i); return !!f && !!f.units },
-  },
-  {
-    title: 'Say what the number is',
-    prompt: 'Select <b>Diameter</b> and describe it too: <i>the pizza across, in centimetres</i>. Every sketched field needs its sentence before a send.',
-    target: '#reqtext',
-    check: (snap) => { const f = field(snap, /diameter/i); return !!f && f.requirement.trim().length > 3 },
+    check: (snap) => { const f = field(snap, /size/i); return !!f && !!f.units },
   },
   {
     title: 'Describe the model',
@@ -96,7 +84,7 @@ function light(selector) {
 
 function render() {
   const card = $('coach')
-  document.body.classList.toggle('playing', step >= 0 && step < STEPS.length)
+  document.body.classList.toggle('tutorial', step >= 0 && step < STEPS.length)
   if (step < 0) { card.hidden = true; light(null); return }
   card.hidden = false
   if (step >= STEPS.length) {
@@ -131,7 +119,7 @@ function advance() {
   render()
 }
 
-export function startGame(fromStep = 0) {
+export function startTutorial(fromStep = 0) {
   step = Math.max(0, Math.min(fromStep, STEPS.length))
   localStorage.setItem(KEY_STEP, String(step))
   render()
@@ -139,19 +127,19 @@ export function startGame(fromStep = 0) {
   timer = setInterval(tick, 500)
 }
 
-export function stopGame() {
+export function stopTutorial() {
   step = -1
   clearInterval(timer); timer = null
   localStorage.removeItem(KEY_STEP)
   render()
 }
 
-export const gameDone = () => localStorage.getItem(KEY_DONE) === '1'
-export const gameResumeStep = () => { const v = localStorage.getItem(KEY_STEP); return v === null ? null : Number(v) }
+export const tutorialDone = () => localStorage.getItem(KEY_DONE) === '1'
+export const tutorialResumeStep = () => { const v = localStorage.getItem(KEY_STEP); return v === null ? null : Number(v) }
 
-export function initGame() {
+export function initTutorial() {
   $('coachskip').addEventListener('click', advance)
-  $('coachquit').addEventListener('click', stopGame)
-  $('playbtn').addEventListener('click', () => startGame(0))
-  $('welcomeplay')?.addEventListener('click', () => startGame(0))
+  $('coachquit').addEventListener('click', stopTutorial)
+  $('playbtn').addEventListener('click', () => startTutorial(0))
+  $('welcomeplay')?.addEventListener('click', () => startTutorial(0))
 }

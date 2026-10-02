@@ -284,7 +284,7 @@ button.wide { width: 100%; }
 .help-head { padding: 14px 20px; }
 .help-head > div { display: flex; align-items: baseline; gap: 10px; }
 
-/* ---------------------------------------------------------------- the guided first game: the coach card and the lit target */
+/* ---------------------------------------------------------------- the guided tutorial: the coach card and the lit target */
 .coach {
   position: absolute; left: 108px; bottom: 16px; width: 360px; max-width: calc(100% - 124px); z-index: 6;   /* clear of the 92 px palette */
   background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 14px 16px;
@@ -300,5 +300,5 @@ button.wide { width: 100%; }
 .coach-glow { box-shadow: 0 0 0 3px rgba(44, 165, 141, 0.45), 0 0 0 8px rgba(44, 165, 141, 0.15) !important; border-radius: var(--radius); animation: coachpulse 1.6s ease-in-out infinite; }
 @keyframes coachpulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(44, 165, 141, 0.45), 0 0 0 8px rgba(44, 165, 141, 0.12); } 50% { box-shadow: 0 0 0 3px rgba(44, 165, 141, 0.7), 0 0 0 12px rgba(44, 165, 141, 0.05); } }
 .welcome-text .welcome-play { pointer-events: auto; margin-top: 14px; }
-body.playing .welcome-play { display: none; }
+body.tutorial .welcome-play { display: none; }
 @media (max-width: 899px) { .coach { left: 104px; right: 12px; bottom: 12px; width: auto; max-width: none; } }
