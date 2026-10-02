@@ -8,7 +8,7 @@ import {
 import {
   initCanvas, resizeCanvas, setReuseResults, draftPayload, hasContent,
   canSearchAdd, saveState, loadState, missingRequirements, mintCount,
-  addReusedToCanvas, mintBreakdown,
+  addReusedToCanvas, mintBreakdown, zoomIn, zoomOut, zoomFit,
 } from './canvas.js'
 
 // Wallet prices in CREDITS (mirror SDCStudio settings: mint 100, assemble 500).
@@ -109,6 +109,11 @@ async function onConnected(info) {
   initCanvas()
   resizeCanvas()
   refreshDrafts()
+  // Review only: `?mock&sample` opens the pizza model so the filled board can be seen.
+  if (new URLSearchParams(location.search).has('sample') && info?.sample_workspace) {
+    loadState(JSON.stringify({ app: 'SDCBench', model: null, workspace: info.sample_workspace }))
+    $('dmdesc').value = 'Orders taken at one pizzeria.'
+  }
 }
 
 // Name + wallet balance in the header. Balance drives what minting will cost.
@@ -430,5 +435,9 @@ $('loadbtn').addEventListener('click', async () => {
     $('createstatus').textContent = `${e}`
   }
 })
+
+$('zoomin').addEventListener('click', zoomIn)
+$('zoomout').addEventListener('click', zoomOut)
+$('zoomfit').addEventListener('click', zoomFit)
 
 window.addEventListener('resize', resizeCanvas)

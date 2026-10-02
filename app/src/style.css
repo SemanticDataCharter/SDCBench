@@ -66,7 +66,8 @@ header .muted { font-size: 13px; }
 
 /* ---------------------------------------------------------------- workspace: the board, and the panel beside or below it */
 #workspace { flex: 1 1 auto; display: flex; min-height: 0; position: relative; }
-#blocklyDiv { flex: 1 1 auto; min-width: 0; height: 100%; }
+#board { flex: 1 1 auto; min-width: 0; min-height: 0; position: relative; }
+#blocklyDiv { position: absolute; inset: 0; }
 #panel {
   flex: 0 0 360px; width: 360px; background: var(--bg);
   border-left: 1px solid var(--rule); padding: 14px; overflow: auto;
@@ -195,3 +196,37 @@ header button, header select { min-height: 36px; font-size: 14px; padding: 0 12p
 .help-toc { margin: 8px 0 14px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radius); font-size: 13px; }
 .help-toc a { display: inline-block; margin: 2px 12px 2px 0; }
 .help-body strong { color: var(--heading); }
+
+/* ---------------------------------------------------------------- the board: our controls in the corner */
+.board-controls { position: absolute; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 5; }
+.board-btn {
+  width: var(--touch); height: var(--touch); min-height: 0; padding: 0; border-radius: 999px;
+  background: var(--surface); color: var(--heading); border: 1px solid var(--rule); box-shadow: var(--shadow);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.board-btn:hover { border-color: var(--teal); color: var(--teal-ink); filter: none; }
+
+/* ---------------------------------------------------------------- Blockly's furniture, ours: the palette and the flyout */
+.blocklyToolbox { background: var(--surface) !important; border-right: 1px solid var(--rule); padding: 10px 8px !important; width: 92px; }
+.blocklyToolboxCategoryGroup { padding: 0 !important; margin: 0 !important; }
+.blocklyToolboxCategoryContainer { margin: 0 0 8px !important; padding: 0 !important; outline: none; }
+/* The category is the tile; Blockly sets its colour as an inline 8 px left border, kept at 4 px. */
+.blocklyToolboxCategory {
+  border-radius: var(--radius) !important; background: var(--bg); cursor: pointer; overflow: hidden;
+  padding: 0 !important; height: auto !important; border-left-width: 4px !important; border-left-style: solid;
+}
+.blocklyToolboxCategory:hover { background: var(--rule); }
+.blocklyToolboxSelected .blocklyToolboxCategory, .blocklyToolboxCategory.blocklyToolboxSelected { background: var(--rule) !important; }
+.blocklyTreeRowContentContainer { display: flex !important; align-items: center; justify-content: center; min-height: 56px; padding: 8px 6px !important; margin: 0 !important; border: 0 !important; }
+.blocklyToolboxCategoryLabel { font-family: var(--font-sans) !important; font-size: 13px !important; font-weight: 600 !important; color: var(--heading) !important; padding: 0 !important; line-height: 1.2; }
+.blocklyToolboxCategoryIcon { display: none !important; }
+.blocklyFlyoutBackground { fill: var(--surface) !important; fill-opacity: 1 !important; stroke: var(--rule); }
+.blocklyFlyoutLabelText { font-family: var(--font-sans); font-size: 13px; fill: var(--muted) !important; }
+.blocklyScrollbarHandle { fill: var(--rule) !important; }
+.blocklyMainBackground { stroke: none !important; }
+
+/* ---------------------------------------------------------------- the pieces: a resting shadow, a lift while dragged */
+.blocklyDraggable > .blocklyPath { filter: drop-shadow(0 1px 1px rgba(10, 35, 66, 0.18)); }
+.blocklyDragging > .blocklyPath { filter: drop-shadow(0 10px 18px rgba(10, 35, 66, 0.30)); }
+.blocklyDragging { cursor: grabbing; }
+.blocklyText { font-family: var(--font-sans) !important; }

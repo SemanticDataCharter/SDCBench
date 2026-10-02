@@ -252,7 +252,7 @@ const isDark = () => {
   return forced ? forced === 'dark' : !!(darkQuery && darkQuery.matches)
 }
 const themeForScheme = () => (isDark() ? themeDark : themeLight)
-const gridColour = () => (isDark() ? '#16263f' : '#e1e6ea')
+const gridColour = () => (isDark() ? '#15233b' : '#e8edf2')
 
 let ws = null
 let reuseRows = []
@@ -468,10 +468,10 @@ export function initCanvas() {
     theme: themeForScheme(),
     renderer: 'zelos', // rounded, quieter connectors than the classic puzzle notches
     media: '/blockly-media/',
-    trashcan: true, // dragging off to the left still works; the can is the visible way (ours in pass B)
+    trashcan: false,   // delete by dragging a piece back onto the palette, or with the Delete key
     scrollbars: true,
-    zoom: { controls: true, wheel: false, startScale: 1.0 },
-    grid: { spacing: 24, length: 2, colour: gridColour(), snap: true },
+    zoom: { controls: false, wheel: false, startScale: 1.0, scaleSpeed: 1.15 },   // the board controls are ours (index.html)
+    grid: { spacing: 32, length: 1, colour: gridColour(), snap: true },   // a quiet board texture, not a dotted grid
   })
   // Follow the OS setting while the app is open.
   if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener('change', () => { ws.setTheme(themeForScheme()) })
@@ -511,6 +511,11 @@ export function initCanvas() {
 }
 
 export function resizeCanvas() { if (ws) Blockly.svgResize(ws) }
+
+// The board controls: zoom in and out about the centre, and fit the whole model.
+export function zoomIn() { if (ws) ws.zoomCenter(1) }
+export function zoomOut() { if (ws) ws.zoomCenter(-1) }
+export function zoomFit() { if (ws) { ws.zoomToFit(); ws.scrollCenter() } }
 
 export function setReuseResults(rows) {
   reuseRows = Array.isArray(rows) ? rows : []

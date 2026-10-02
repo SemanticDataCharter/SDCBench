@@ -4,7 +4,30 @@
 // URL asks). Shapes mirror the Rust commands; values are the pizza tutorial's.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-const ME = { email: 'tom.beale@example.com', name: 'Tom Beale', default_project_ct_id: 'proj_pizzeria' }
+const reused = (ct_id, type, label, description = '') => ({ ct_id, type, description, label })
+const field = (name, kind, req, extra = {}) => ({ type: 'sdc_field', fields: { NAME: name, KIND: kind }, data: req ? JSON.stringify({ requirement: req }) : '', extraState: { kind, ranges: false }, ...extra })
+const rfield = (r) => ({ type: 'sdc_field_reused', data: JSON.stringify({ ct_id: r.ct_id, type: r.type, description: r.description }), fields: { BADGE: { xdstring: 'Text', xdtoken: 'Code', xdtemporal: 'Date / time', xdboolean: 'Boolean' }[r.type] || r.type, LABEL: r.label } })
+const rgroup = (r) => ({ type: 'sdc_group_reused', data: JSON.stringify({ ct_id: r.ct_id, type: r.type, description: r.description }), fields: { LABEL: r.label } })
+const chain = (blocks) => blocks.reduceRight((next, b) => (next ? { ...b, next: { block: next } } : b), null)
+const SAMPLE_WORKSPACE = { blocks: { blocks: [{
+  type: 'sdc_model', x: 40, y: 30, fields: { NAME: 'Pizza Order' },
+  inputs: { ROOT: { block: { type: 'sdc_group', fields: { NAME: 'data' }, inputs: { ITEMS: { block: chain([
+    { type: 'sdc_group', fields: { NAME: 'Customer' }, inputs: { ITEMS: { block: chain([
+      rgroup(reused('c01', 'cluster', 'Full Name (Person)')), rfield(reused('c05', 'xdstring', 'Phone Number')), rfield(reused('c06', 'xdstring', 'Email Address')), rgroup(reused('c09', 'cluster', 'US Address')),
+    ]) } } },
+    { type: 'sdc_group', fields: { NAME: 'Pizza' }, inputs: { ITEMS: { block: chain([
+      field('Size', 'XdTokenType', 'Small, medium or large.'),
+      field('Crust', 'XdTokenType', ''),
+      field('Toppings', 'XdTokenType', ''),
+      field('Diameter', 'XdQuantityType', '', { inputs: { UNITS: { block: { type: 'sdc_units_reused', data: JSON.stringify({ ct_id: 'c08', type: 'units' }), fields: { LABEL: 'Length/Distance (SI - Metric)' } } } } }),
+      rfield(reused('c10', 'xdboolean', 'Yes/No Indicator')),
+      field('Quantity', 'XdCountType', '', { inputs: { UNITS: { shadow: { type: 'sdc_units_empty' } } } }),
+    ]) } } },
+    rfield(reused('c07', 'xdtemporal', 'DateTime')),
+  ]) } } } } },
+}] } }
+
+const ME = { email: 'tom.beale@example.com', name: 'Tom Beale', default_project_ct_id: 'proj_pizzeria', sample_workspace: SAMPLE_WORKSPACE }
 const PROJECTS = [
   { ct_id: 'proj_pizzeria', name: 'Pizzeria', owner_email: ME.email, is_public: false, is_default_library: false },
   { ct_id: 'proj_default', name: 'Default', owner_email: 'library@axius-sdc.com', is_public: true, is_default_library: true },
