@@ -201,10 +201,8 @@ const toolbox = {
     {
       kind: 'category', name: 'New', colour: COL.entry,
       contents: [
-        { kind: 'block', type: 'sdc_group' },
         { kind: 'block', type: 'sdc_field' },
-        { kind: 'sep', gap: '12' },
-        { kind: 'block', type: 'sdc_model' },
+        { kind: 'block', type: 'sdc_group' },
       ],
     },
     { kind: 'category', name: 'Reuse', colour: COL.attach, custom: 'REUSE' },
@@ -511,6 +509,27 @@ export function initCanvas() {
 }
 
 export function resizeCanvas() { if (ws) Blockly.svgResize(ws) }
+export const workspace = () => ws   // for scripted review in the browser; the app does not use it
+export function selectForEditing(blockId) { lastSelectedId = blockId; updateReqEditor(blockId) }   // the same, for a scripted click
+
+// What is on the board, for the guided first game: the model's name, every group
+// (name, reused, parent group) and every field (name, kind, units label, requirement, group).
+export function snapshot() {
+  const out = { model: '', groups: [], fields: [] }
+  if (!ws) return out
+  const m = ws.getTopBlocks(false).find((b) => b.type === 'sdc_model')
+  if (m) out.model = m.getFieldValue('NAME') || ''
+  const groupOf = (b) => { let p = b.getParent(); while (p && !isGroupBlock(p)) p = p.getParent(); return p ? (p.getFieldValue('NAME') || p.getFieldValue('LABEL') || '') : '' }
+  ws.getAllBlocks(false).forEach((b) => {
+    if (b.type === 'sdc_group') out.groups.push({ name: b.getFieldValue('NAME') || '', reused: false, group: groupOf(b) })
+    else if (b.type === 'sdc_group_reused') out.groups.push({ name: b.getFieldValue('LABEL') || '', reused: true, group: groupOf(b) })
+    else if (b.type === 'sdc_field') {
+      const u = b.getInput('UNITS')?.connection?.targetBlock()
+      out.fields.push({ name: b.getFieldValue('NAME') || '', kind: b.getFieldValue('KIND'), reused: false, units: (u && !u.isShadow()) ? (u.getFieldValue('LABEL') || '') : '', requirement: reqOf(b), group: groupOf(b) })
+    } else if (b.type === 'sdc_field_reused') out.fields.push({ name: b.getFieldValue('LABEL') || '', kind: reuseData(b).type || '', reused: true, units: '', requirement: '', group: groupOf(b) })
+  })
+  return out
+}
 
 // The board controls: zoom in and out about the centre, and fit the whole model.
 export function zoomIn() { if (ws) ws.zoomCenter(1) }

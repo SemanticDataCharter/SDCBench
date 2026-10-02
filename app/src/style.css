@@ -72,7 +72,6 @@ header .muted { font-size: 13px; }
   flex: 0 0 360px; width: 360px; background: var(--bg);
   border-left: 1px solid var(--rule); padding: 14px; overflow: auto;
 }
-.panel-block { margin-bottom: 18px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 14px; }
 h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
 .muted { color: var(--muted); font-size: 13px; }
 .warn { color: var(--warn); }
@@ -137,16 +136,10 @@ header button, header select { min-height: 36px; font-size: 14px; padding: 0 12p
   background: var(--bg); white-space: nowrap;
 }
 .result .result-label { font-weight: 600; font-size: 14px; color: var(--heading); }
-.result .result-add { margin-left: auto; font-size: 12px; color: var(--muted); }
+.result .result-add { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .result:hover .result-add { color: var(--teal-ink); }
 #blocklyDiv.droptarget { outline: 2px dashed var(--teal); outline-offset: -3px; }
 
-/* Empty-canvas hint: shown beside the root group until the first field lands (the welcome of pass C replaces it). */
-.canvas-hint {
-  position: absolute; left: 370px; top: 90px; max-width: 320px; pointer-events: none;
-  color: var(--muted); font-size: 14px; line-height: 1.5;
-  border-left: 2px solid var(--teal); padding-left: 10px;
-}
 
 .cv-preview { margin-top: 6px; }
 .cv-preview pre {
@@ -230,3 +223,82 @@ header button, header select { min-height: 36px; font-size: 14px; padding: 0 12p
 .blocklyDragging > .blocklyPath { filter: drop-shadow(0 10px 18px rgba(10, 35, 66, 0.30)); }
 .blocklyDragging { cursor: grabbing; }
 .blocklyText { font-family: var(--font-sans) !important; }
+
+/* ---------------------------------------------------------------- the panel: three cards */
+.card { margin-bottom: 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 16px; }
+.card-title { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--heading); text-transform: none; letter-spacing: 0; margin: 0 0 12px; }
+.card-title span { color: var(--teal-ink); }
+.small { font-size: 12px; }
+.search { position: relative; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search input { padding-left: 38px; font-size: 15px; }
+.scope { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; }
+.scope label { flex: none; font-size: 13px; }
+.scope select.compact { min-height: 36px; padding: 6px 30px 6px 10px; font-size: 13px; background-color: var(--bg); border-color: transparent; }
+.scope select.compact:hover { border-color: var(--rule); }
+#libmsg:empty { display: none; }
+#libmsg { margin: 10px 0 0; }
+.results { max-height: 36vh; }
+.status { margin: 0 0 12px; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.status::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: var(--rule); flex: none; }
+.status.ok { color: var(--ok); } .status.ok::before { background: var(--teal); }
+.status.warn { color: var(--warn); } .status.warn::before { background: var(--gold); }
+button.wide { width: 100%; }
+.secondary-row { margin-top: 8px; }
+#createstatus:empty { display: none; }
+#createstatus { margin: 10px 0 0; }
+.more { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.more .row2 { margin-bottom: 8px; }
+.cv-preview summary { cursor: pointer; }
+
+/* ---------------------------------------------------------------- the welcome on an empty board */
+.welcome { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.welcome[hidden] { display: none; }
+.welcome-mark { position: absolute; width: 46vmin; max-width: 420px; opacity: 0.06; }
+.welcome-text { position: relative; max-width: 420px; text-align: center; margin-left: 220px; }
+.welcome-text h2 { font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15; color: var(--heading); text-transform: none; letter-spacing: 0; margin: 0 0 10px; }
+.welcome-text p { margin: 6px 0; font-size: 15px; color: var(--muted); }
+.welcome-text b { color: var(--heading); }
+@media (max-width: 899px) { .welcome-text { margin-left: 0; } .welcome-text h2 { font-size: 24px; } }
+
+/* ---------------------------------------------------------------- the sheet: the panel along the bottom edge under 900 px */
+.sheet-handle { display: none; }
+@media (max-width: 899px) {
+  #panel { flex: 0 0 auto; height: 196px; transition: height .22s ease; overflow: hidden; padding-top: 6px; }
+  #panel.open { height: 62vh; overflow: auto; }
+  .sheet-handle {
+    display: flex; width: 100%; min-height: 28px; padding: 4px 0 8px; background: transparent; border: 0; justify-content: center; align-items: center;
+  }
+  .sheet-handle[hidden] { display: none; }
+  .sheet-handle span { width: 44px; height: 5px; border-radius: 999px; background: var(--rule); }
+  /* Closed: Your model first, so the status and Send stay in reach; the finder is a tap away. */
+  #panel:not(.open) #findcard, #panel:not(.open) #reqeditor { display: none; }
+  #panel:not(.open) .field, #panel:not(.open) .secondary-row, #panel:not(.open) .more { display: none; }
+  #panel.open #modelcard { order: 2; }
+  #panel { display: flex; flex-direction: column; }
+}
+
+/* ---------------------------------------------------------------- help as a drawer on the right */
+#help { justify-content: flex-end; padding: 0; background: rgba(10, 35, 66, 0.25); }
+.help-card { width: 560px; max-width: 100vw; height: 100%; max-height: none; border-radius: 0; border-right: 0; border-top: 0; border-bottom: 0; box-shadow: var(--shadow); }
+.help-head { padding: 14px 20px; }
+.help-head > div { display: flex; align-items: baseline; gap: 10px; }
+
+/* ---------------------------------------------------------------- the guided first game: the coach card and the lit target */
+.coach {
+  position: absolute; left: 108px; bottom: 16px; width: 360px; max-width: calc(100% - 124px); z-index: 6;   /* clear of the 92 px palette */
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 14px 16px;
+}
+.coach[hidden] { display: none; }
+.coach-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.coach-step { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.coach-title { font-family: var(--font-display); font-weight: 500; font-size: 20px; color: var(--heading); }
+.coach-prompt { margin: 0 0 10px; font-size: 14px; line-height: 1.5; color: var(--ink); }
+.coach-prompt b { color: var(--heading); }
+.coach-actions { display: flex; gap: 8px; }
+.small-btn { min-height: 34px; font-size: 13px; padding: 0 12px; }
+.coach-glow { box-shadow: 0 0 0 3px rgba(44, 165, 141, 0.45), 0 0 0 8px rgba(44, 165, 141, 0.15) !important; border-radius: var(--radius); animation: coachpulse 1.6s ease-in-out infinite; }
+@keyframes coachpulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(44, 165, 141, 0.45), 0 0 0 8px rgba(44, 165, 141, 0.12); } 50% { box-shadow: 0 0 0 3px rgba(44, 165, 141, 0.7), 0 0 0 12px rgba(44, 165, 141, 0.05); } }
+.welcome-text .welcome-play { pointer-events: auto; margin-top: 14px; }
+body.playing .welcome-play { display: none; }
+@media (max-width: 899px) { .coach { left: 104px; right: 12px; bottom: 12px; width: auto; max-width: none; } }
