@@ -47,10 +47,10 @@ nk.Field.rm_types.forEach((rm) => {
 // House palette. One colour for data, whatever its family: the type badge on the
 // block face carries the distinction, and three greens did not read as three.
 const COL = {
-  entry: '#2ca58d',    // data (every Xd* leaf)
-  group: '#3b5578',    // container (Cluster)
+  entry: '#2ca58d',    // data (every Xd* leaf): the teal accent
+  group: '#3d5784',    // container (Cluster): the mid navy
   attach: '#f0a500',   // attachments (Units, ReferenceRange): the signal colour
-  model: '#5b6ee1',    // the DM root
+  model: '#0a2342',    // the DM root: the navy that frames everything
 }
 function dataColour(rm) { return COL.entry }
 // A small SVG pill used as a block-face marker for reuse. Colour is reserved for the
@@ -201,30 +201,56 @@ const toolbox = {
     {
       kind: 'category', name: 'New', colour: COL.entry,
       contents: [
-        { kind: 'block', type: 'sdc_group' },
         { kind: 'block', type: 'sdc_field' },
-        { kind: 'sep', gap: '12' },
-        { kind: 'block', type: 'sdc_model' },
+        { kind: 'block', type: 'sdc_group' },
       ],
     },
     { kind: 'category', name: 'Reuse', colour: COL.attach, custom: 'REUSE' },
   ],
 }
 
-const theme = Blockly.Theme.defineTheme('sdcdark', {
+// Two themes from the house tokens; the OS setting picks one (see initCanvas).
+const FONT = { family: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", weight: '500', size: 12 }
+const themeLight = Blockly.Theme.defineTheme('sdclight', {
   base: Blockly.Themes.Classic,
   componentStyles: {
-    workspaceBackgroundColour: '#050b14',
-    toolboxBackgroundColour: '#0a1a30',
-    flyoutBackgroundColour: '#0b1f3a',
+    workspaceBackgroundColour: '#f7f9fb',
+    toolboxBackgroundColour: '#ffffff',
+    toolboxForegroundColour: '#0a2342',
+    flyoutBackgroundColour: '#ffffff',
+    flyoutForegroundColour: '#0a2342',
+    flyoutOpacity: 1,
+    scrollbarColour: '#c5cedb',
+    insertionMarkerColour: '#2ca58d',
+    insertionMarkerOpacity: 0.5,
+    cursorColour: '#2ca58d',
+  },
+  fontStyle: FONT,
+})
+const themeDark = Blockly.Theme.defineTheme('sdcdark', {
+  base: Blockly.Themes.Classic,
+  componentStyles: {
+    workspaceBackgroundColour: '#0b1626',
+    toolboxBackgroundColour: '#12213a',
+    toolboxForegroundColour: '#e8eef6',
+    flyoutBackgroundColour: '#12213a',
     flyoutForegroundColour: '#e8eef6',
+    flyoutOpacity: 1,
     scrollbarColour: '#2a3a55',
     insertionMarkerColour: '#2ca58d',
     insertionMarkerOpacity: 0.5,
     cursorColour: '#2ca58d',
   },
-  fontStyle: { family: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', weight: '500', size: 11 },
+  fontStyle: FONT,
 })
+const darkQuery = (typeof window !== 'undefined' && window.matchMedia) ? window.matchMedia('(prefers-color-scheme: dark)') : null
+// The html element's data-theme wins over the OS setting (review and user override).
+const isDark = () => {
+  const forced = typeof document !== 'undefined' ? document.documentElement.dataset.theme : ''
+  return forced ? forced === 'dark' : !!(darkQuery && darkQuery.matches)
+}
+const themeForScheme = () => (isDark() ? themeDark : themeLight)
+const gridColour = () => (isDark() ? '#15233b' : '#e8edf2')
 
 let ws = null
 let reuseRows = []
@@ -437,14 +463,16 @@ export function initCanvas() {
   if (ws) { Blockly.svgResize(ws); return }
   ws = Blockly.inject('blocklyDiv', {
     toolbox,
-    theme,
+    theme: themeForScheme(),
     renderer: 'zelos', // rounded, quieter connectors than the classic puzzle notches
     media: '/blockly-media/',
-    trashcan: true, // dragging off to the left still works; the can is the visible way
+    trashcan: false,   // delete by dragging a piece back onto the palette, or with the Delete key
     scrollbars: true,
-    zoom: { controls: true, wheel: false, startScale: 0.9 },
-    grid: { spacing: 24, length: 2, colour: '#12213a', snap: true },
+    zoom: { controls: false, wheel: false, startScale: 1.0, scaleSpeed: 1.15 },   // the board controls are ours (index.html)
+    grid: { spacing: 32, length: 1, colour: gridColour(), snap: true },   // a quiet board texture, not a dotted grid
   })
+  // Follow the OS setting while the app is open.
+  if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener('change', () => { ws.setTheme(themeForScheme()) })
   ws.registerToolboxCategoryCallback('REUSE', reuseFlyout)
   ws.addChangeListener((e) => {
     // Colour a freshly-dropped reused field by its data family (its ct_id/type is
@@ -481,6 +509,32 @@ export function initCanvas() {
 }
 
 export function resizeCanvas() { if (ws) Blockly.svgResize(ws) }
+export const workspace = () => ws   // for scripted review in the browser; the app does not use it
+export function selectForEditing(blockId) { lastSelectedId = blockId; updateReqEditor(blockId) }   // the same, for a scripted click
+
+// What is on the board, for the guided first game: the model's name, every group
+// (name, reused, parent group) and every field (name, kind, units label, requirement, group).
+export function snapshot() {
+  const out = { model: '', groups: [], fields: [] }
+  if (!ws) return out
+  const m = ws.getTopBlocks(false).find((b) => b.type === 'sdc_model')
+  if (m) out.model = m.getFieldValue('NAME') || ''
+  const groupOf = (b) => { let p = b.getParent(); while (p && !isGroupBlock(p)) p = p.getParent(); return p ? (p.getFieldValue('NAME') || p.getFieldValue('LABEL') || '') : '' }
+  ws.getAllBlocks(false).forEach((b) => {
+    if (b.type === 'sdc_group') out.groups.push({ name: b.getFieldValue('NAME') || '', reused: false, group: groupOf(b) })
+    else if (b.type === 'sdc_group_reused') out.groups.push({ name: b.getFieldValue('LABEL') || '', reused: true, group: groupOf(b) })
+    else if (b.type === 'sdc_field') {
+      const u = b.getInput('UNITS')?.connection?.targetBlock()
+      out.fields.push({ name: b.getFieldValue('NAME') || '', kind: b.getFieldValue('KIND'), reused: false, units: (u && !u.isShadow()) ? (u.getFieldValue('LABEL') || '') : '', requirement: reqOf(b), group: groupOf(b) })
+    } else if (b.type === 'sdc_field_reused') out.fields.push({ name: b.getFieldValue('LABEL') || '', kind: reuseData(b).type || '', reused: true, units: '', requirement: '', group: groupOf(b) })
+  })
+  return out
+}
+
+// The board controls: zoom in and out about the centre, and fit the whole model.
+export function zoomIn() { if (ws) ws.zoomCenter(1) }
+export function zoomOut() { if (ws) ws.zoomCenter(-1) }
+export function zoomFit() { if (ws) { ws.zoomToFit(); ws.scrollCenter() } }
 
 export function setReuseResults(rows) {
   reuseRows = Array.isArray(rows) ? rows : []

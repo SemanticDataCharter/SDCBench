@@ -8,9 +8,10 @@
 </head>
 <body>
   <header>
-    <h1>SDCBench</h1>
-    <span id="health" class="badge">checking…</span>
+    <a class="brand" href="#" aria-label="SDCBench"><img src="/brand/mark-128.png" alt="" /><h1>SDCBench</h1></a>
+    <span id="health" class="badge" hidden></span>
     <div class="grow"></div>
+    <button id="playbtn" class="ghost" title="Build a small model with the next move shown">First game</button>
     <button id="helpbtn" class="ghost">Help</button>
     <div id="session" class="session" hidden>
       <span id="whoami" class="muted"></span>
@@ -21,47 +22,75 @@
   </header>
 
   <div id="workspace">
-    <div id="blocklyDiv"></div>
-    <div id="canvashint" class="canvas-hint" hidden>Your model starts here. Search the library on the right and drag a component into <b>contains</b>, or drag a new Field from <b>New</b>.</div>
-    <aside id="panel">
-      <section class="panel-block">
-        <h2>Reuse · Find components</h2>
-        <div class="field">
-          <label for="searchproject" class="muted">Search in</label>
-          <select id="searchproject"></select>
+    <div id="board" class="board">
+      <div id="blocklyDiv"></div>
+      <div id="canvashint" class="welcome" hidden>
+        <img class="welcome-mark" src="/brand/mark-512.png" alt="" />
+        <div class="welcome-text">
+          <h2>Your model starts here</h2>
+          <p>Search the library on the right and drag a piece into the root group, or click a result to add it.</p>
+          <p>Sketch a new field from <b>New</b> only when nothing in the library fits.</p>
+          <button id="welcomeplay" class="ghost welcome-play">Play the first game, about ten minutes</button>
         </div>
-        <input id="libsearch" type="text" placeholder="Search by meaning, for example: date of birth" />
+      </div>
+      <div id="coach" class="coach" role="status" hidden>
+        <div class="coach-head"><span id="coachstep" class="coach-step"></span><span id="coachtitle" class="coach-title"></span></div>
+        <p id="coachprompt" class="coach-prompt"></p>
+        <div class="coach-actions"><button id="coachskip" class="ghost small-btn">Skip this move</button><button id="coachquit" class="ghost small-btn">Quit</button></div>
+      </div>
+      <div class="board-controls" aria-label="Board controls">
+        <button id="zoomfit" class="board-btn" title="Fit the model" aria-label="Fit the model"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg></button>
+        <button id="zoomin" class="board-btn" title="Zoom in" aria-label="Zoom in"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg></button>
+        <button id="zoomout" class="board-btn" title="Zoom out" aria-label="Zoom out"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 10h12"/></svg></button>
+      </div>
+    </div>
+    <aside id="panel">
+      <button id="sheethandle" class="sheet-handle" aria-label="Show or hide the panel" hidden><span></span></button>
+
+      <section class="card" id="findcard">
+        <h2 class="card-title">Find a component</h2>
+        <div class="search">
+          <svg class="search-icon" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
+          <input id="libsearch" type="text" placeholder="Search by meaning: date of birth, blood pressure, address" autocomplete="off" />
+        </div>
+        <div class="scope">
+          <label for="searchproject" class="muted">in</label>
+          <select id="searchproject" class="compact"></select>
+        </div>
         <p id="libmsg" class="muted"></p>
         <div id="results" class="results" hidden></div>
-        <p class="muted">Drag a result onto the canvas, or click it to add it to the selected group. Reusing a published component is free.</p>
+        <p id="reusehint" class="muted small" hidden>Click a result to add it to the selected group. Drag it to place it yourself. Reuse is free.</p>
       </section>
 
-      <section id="reqeditor" class="panel-block" hidden>
-        <h2>Requirement · <span id="reqfor"></span></h2>
-        <textarea id="reqtext" rows="4" placeholder="What is this? Units, normal or expected values, and any guideline. For example: systolic BP in mmHg, adult normal below 120, per ACC/AHA 2017. This is what the modeler works from in SDCStudio."></textarea>
-        <p class="muted">Select a new component on the canvas to describe it.</p>
+      <section id="reqeditor" class="card" hidden>
+        <h2 class="card-title">Describe <span id="reqfor"></span></h2>
+        <textarea id="reqtext" rows="4" placeholder="What is this? Units, normal or expected values, and any guideline. For example: systolic BP in mmHg, adult normal below 120, per ACC/AHA 2017."></textarea>
+        <p class="muted small">The data modeler works from this in SDCStudio.</p>
       </section>
-      <section class="panel-block">
-        <h2>Your model</h2>
-        <p id="cvstatus" class="muted"></p>
+
+      <section class="card" id="modelcard">
+        <h2 class="card-title">Your model</h2>
+        <p id="cvstatus" class="status"></p>
         <div class="field">
-          <label for="dmdesc" class="muted">Model description</label>
-          <textarea id="dmdesc" rows="2" placeholder="What this model captures. Used when it is finalized in SDCStudio."></textarea>
+          <label for="dmdesc" class="muted">What this model captures</label>
+          <textarea id="dmdesc" rows="2" placeholder="One or two sentences. Used when it is finalized in SDCStudio."></textarea>
         </div>
-        <div class="row2">
-          <select id="loadselect"><option value="">Saved drafts…</option></select>
-          <button id="loadbtn" class="ghost">Load</button>
-        </div>
-        <div class="row2">
-          <button id="savebtn" class="ghost">Save draft locally</button>
-          <button id="createbtn">Send to SDCStudio</button>
+        <button id="createbtn" class="primary wide">Send to SDCStudio</button>
+        <div class="row2 secondary-row">
+          <button id="savebtn" class="ghost">Save draft</button>
+          <button id="morebtn" class="ghost" aria-expanded="false">More</button>
         </div>
         <p id="createstatus" class="muted"></p>
-        <details class="cv-preview">
-          <summary class="muted">Advanced</summary>
-          <p class="muted">The structure SDCBench will send, as a data modeler sees it.</p>
-          <pre id="cvout"></pre>
-        </details>
+        <div id="more" class="more" hidden>
+          <div class="row2">
+            <select id="loadselect"><option value="">Saved drafts…</option></select>
+            <button id="loadbtn" class="ghost">Load</button>
+          </div>
+          <details class="cv-preview">
+            <summary class="muted">Advanced: the structure SDCBench will send</summary>
+            <pre id="cvout"></pre>
+          </details>
+        </div>
       </section>
     </aside>
   </div>
@@ -69,6 +98,7 @@
   <!-- Login gate: shown over the canvas until signed in. API key only. -->
   <div id="gate">
     <div class="gate-card">
+      <img class="gate-mark" src="/brand/mark-512.png" alt="" />
       <h2>Sign in to SDCStudio</h2>
       <p class="muted">SDCBench builds into your SDCStudio account. Sign in with your API key. It is stored in your OS keychain and never leaves this machine. You stay signed in until you sign out.</p>
       <div class="gate-row">
@@ -94,11 +124,11 @@
     </div>
   </div>
 
-  <!-- Help: the user guide, rendered from docs/USER-GUIDE.md -->
+  <!-- Help: the user guide, rendered from docs/USER-GUIDE.md, as a drawer on the right -->
   <div id="help" class="hidden">
-    <div class="help-card">
+    <div class="help-card" role="dialog" aria-label="SDCBench Help">
       <div class="help-head">
-        <h2>SDCBench Help</h2>
+        <div><h2>Help</h2><span id="version" class="badge"></span></div>
         <button id="helpclose" class="ghost">Close</button>
       </div>
       <div id="helpbody" class="help-body"></div>

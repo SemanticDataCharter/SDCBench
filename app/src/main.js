@@ -8,7 +8,7 @@ import {
 import {
   initCanvas, resizeCanvas, setReuseResults, draftPayload, hasContent,
   canSearchAdd, saveState, loadState, missingRequirements, mintCount,
-  addReusedToCanvas, mintBreakdown,
+  addReusedToCanvas, mintBreakdown, zoomIn, zoomOut, zoomFit, workspace, snapshot, selectForEditing,
 } from './canvas.js'
 
 // Wallet prices in CREDITS (mirror SDCStudio settings: mint 100, assemble 500).
@@ -19,10 +19,18 @@ const MINT_COST = 100
 const ASSEMBLE_COST = 500
 const fmtCredits = (n) => Number(n).toLocaleString('en-US')
 import guideMd from '../../docs/USER-GUIDE.md?raw'
+import { initGame, startGame, gameDone, gameResumeStep } from './game.js'
 
 const VERSION = '4.0.0b2'
 
 const $ = (id) => document.getElementById(id)
+// Review hooks, only with ?mock: scripted drives of the board from the browser console.
+if (new URLSearchParams(location.search).has('mock')) window.__sdcbench = { workspace, snapshot, selectForEditing }
+// `?scheme=light|dark` forces the theme (review and screenshots); otherwise the OS decides.
+{
+  const scheme = new URLSearchParams(location.search).get('scheme')
+  if (scheme === 'light' || scheme === 'dark') document.documentElement.dataset.theme = scheme
+}
 const gate = (show) => $('gate').classList.toggle('hidden', !show)
 
 // --- Help: render the bundled user guide (offline) and toggle the overlay ---
@@ -33,18 +41,26 @@ function mdToHtml(md) {
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/`(.+?)`/g, '<code>$1</code>')
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>')
+  // The guide is hard-wrapped in the source, so consecutive lines are one paragraph
+  // (or one list item) until a blank line, a heading or a new item.
   let html = ''
   let inList = false
-  const closeList = () => { if (inList) { html += '</ul>'; inList = false } }
+  let para = []
+  let item = null
+  const flushPara = () => { if (para.length) { html += `<p>${inline(para.join(' '))}</p>`; para = [] } }
+  const flushItem = () => { if (item !== null) { html += `<li>${inline(item)}</li>`; item = null } }
+  const closeList = () => { flushItem(); if (inList) { html += '</ul>'; inList = false } }
   for (const raw of md.split('\n')) {
     const line = raw.replace(/\s+$/, '')
     const h = line.match(/^(#{1,4})\s+(.*)/)
     const li = line.match(/^[-*]\s+(.*)/)
-    if (h) { closeList(); html += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>` }
-    else if (li) { if (!inList) { html += '<ul>'; inList = true } html += `<li>${inline(li[1])}</li>` }
-    else if (!line.trim()) { closeList() }
-    else { closeList(); html += `<p>${inline(line)}</p>` }
+    if (h) { flushPara(); closeList(); html += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>` }
+    else if (li) { flushPara(); flushItem(); if (!inList) { html += '<ul>'; inList = true } item = li[1] }
+    else if (!line.trim()) { flushPara(); closeList() }
+    else if (item !== null) { item += ' ' + line.trim() }
+    else { closeList(); para.push(line.trim()) }
   }
+  flushPara()
   closeList()
   return html
 }
@@ -70,13 +86,12 @@ $('helpclose').addEventListener('click', () => showHelp(false))
 $('help').addEventListener('click', (e) => { if (e.target === $('help')) showHelp(false) })
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') showHelp(false) })
 
-// --- Health badge (proves the shell<->bridge wiring) ---
+// --- Health (proves the shell<->bridge wiring). The version lives in Help; the
+// header badge appears only when the bridge is broken. ---
+$('version').textContent = VERSION
 health()
-  .then((h) => {
-    $('health').textContent = `${h.app} ${VERSION}`
-    $('health').className = 'badge'
-  })
-  .catch((e) => { $('health').textContent = `bridge error: ${e}`; $('health').className = 'badge err' })
+  .then(() => { $('health').hidden = true })
+  .catch((e) => { $('health').textContent = `bridge error: ${e}`; $('health').className = 'badge err'; $('health').hidden = false })
 
 // --- Session ---
 let me = null
@@ -105,6 +120,15 @@ async function onConnected(info) {
   initCanvas()
   resizeCanvas()
   refreshDrafts()
+  // The first game resumes where it was left; a finished one waits for the button.
+  const resume = gameResumeStep()
+  if (resume !== null && !gameDone()) startGame(resume)
+  else if (new URLSearchParams(location.search).has('game')) startGame(0)   // review: open on the first move
+  // Review only: `?mock&sample` opens the pizza model so the filled board can be seen.
+  if (new URLSearchParams(location.search).has('sample') && info?.sample_workspace) {
+    loadState(JSON.stringify({ app: 'SDCBench', model: null, workspace: info.sample_workspace }))
+    $('dmdesc').value = 'Orders taken at one pizzeria.'
+  }
 }
 
 // Name + wallet balance in the header. Balance drives what minting will cost.
@@ -279,7 +303,7 @@ $('libsearch').addEventListener('input', (e) => {
 async function runSearch(q) {
   const seq = ++libSeq
   $('libmsg').textContent = q ? 'Searching…' : ''
-  if (!q) { setReuseResults([]); renderResults([]); return }
+  if (!q) { setReuseResults([]); renderResults([]); $('reusehint').hidden = true; return }
   try {
     const rows = await searchComponents(q, searchProject)
     if (seq !== libSeq) return
@@ -289,6 +313,7 @@ async function runSearch(q) {
     const list = all.filter((r) => canSearchAdd(r.type))
     setReuseResults(list)
     renderResults(list)
+    $('reusehint').hidden = !list.length
     const hidden = all.length - list.length
     $('libmsg').textContent = list.length
       ? `${list.length} published component${list.length === 1 ? '' : 's'}` +
@@ -426,5 +451,30 @@ $('loadbtn').addEventListener('click', async () => {
     $('createstatus').textContent = `${e}`
   }
 })
+
+// The panel's rarely used controls (saved drafts, the structure) live behind More.
+$('morebtn').addEventListener('click', () => {
+  const open = $('more').hidden
+  $('more').hidden = !open
+  $('morebtn').setAttribute('aria-expanded', String(open))
+  $('morebtn').textContent = open ? 'Less' : 'More'
+})
+
+// Under 900 px the panel is a sheet along the bottom edge: the handle opens and closes it.
+const narrow = window.matchMedia('(max-width: 899px)')
+function layoutSheet() {
+  const sheet = narrow.matches
+  $('sheethandle').hidden = !sheet
+  if (!sheet) $('panel').classList.remove('open')
+  resizeCanvas()
+}
+$('sheethandle').addEventListener('click', () => { $('panel').classList.toggle('open'); setTimeout(resizeCanvas, 260) })
+narrow.addEventListener('change', layoutSheet)
+layoutSheet()
+
+initGame()
+$('zoomin').addEventListener('click', zoomIn)
+$('zoomout').addEventListener('click', zoomOut)
+$('zoomfit').addEventListener('click', zoomFit)
 
 window.addEventListener('resize', resizeCanvas)
