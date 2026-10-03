@@ -74,7 +74,7 @@ jobs:
         run: |
           npm ci
           npx tauri build --bundles appimage
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: sdcbench-linux
           path: app/src-tauri/target/release/bundle/appimage/*.AppImage
@@ -99,7 +99,7 @@ jobs:
       # SignPath needs the unsigned installer uploaded as an artifact to sign it.
       - name: Upload unsigned installer
         id: unsigned
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: sdcbench-windows-unsigned
           path: app/src-tauri/target/release/bundle/nsis/*-setup.exe
@@ -127,7 +127,7 @@ jobs:
           else
             cp app/src-tauri/target/release/bundle/nsis/*-setup.exe out/
           fi
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: sdcbench-windows
           path: out/*.exe
@@ -138,7 +138,7 @@ jobs:
     needs: [linux, windows]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
       - name: Publish release
