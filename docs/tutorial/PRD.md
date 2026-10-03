@@ -1,6 +1,6 @@
 # SDCBench Tutorial PRD: "The Pizza Order"
 
-**Status:** Draft 1, 2026-09-14, for discussion. Three of the open questions were settled by Tim the same day; see section 8. The tutorial itself is paused behind a usability and visual review of SDCBench. Written from the 11 September strategy session
+**Status:** Draft 2, 2026-10-03. Draft 1 (2026-09-14) had three of the open questions settled by Tim the same day; see section 8. The usability and visual review of SDCBench that paused the tutorial has shipped (4.0.0-beta.3 and beta.4, 2026-10-02), and the bench now carries a nine-move built-in tutorial that is steps 1 to 3 of this one on a smaller model. **Draft 2 changes (Tim, 2026-10-03):** Size is the diameter, an Integer in inches with reused units; the small, medium, large list is gone from chapter one; the Ordinal lesson moves to Heat; the Size cluster with an assert becomes chapter two (section 11). Written from the 11 September strategy session
 with Thomas Beale, where the participants agreed on a step-by-step, pizza-ontology-style
 tutorial for SDCBench and a two-hour onboarding bar: a new user authors a model, builds a
 simple application and sees data in it.
@@ -51,13 +51,14 @@ about 3,000 credits.
 - **Single domain, simple scenario.** No cross-domain joins, no governance composition, no
   graph store. Those are CordovaOS's job.
 - **Recognizable without expertise.** Nobody needs to be told what a topping is.
-- **Exercises every SDCBench block type once:** Text, Integer, Decimal with units, Date/Time,
-  Code, List of Codes, Boolean, and a nested Group.
+- **Exercises every SDCBench block type once:** Text, Integer with units, Decimal with units,
+  Date/Time, Code, Ranked, List of Codes, Boolean, and a nested Group.
 - **Exercises reuse hard.** Customer name, address, phone, email, currency, date-time and
   yes/no all exist in the public Default library today, so the model is mostly drag-and-drop.
-- **Exercises the modeler step honestly.** The new components need real constraints: a code
-  list for sizes, a code list with semantic binding for toppings, units for diameter and bake
-  temperature, a price with a currency.
+- **Exercises the modeler step honestly.** The new components need real constraints: units
+  and a range for the size, a code list for the crust, an ordered list for the heat, a code
+  list with semantic binding for the toppings, units for the bake temperature, a price with a
+  currency.
 
 ### The model
 
@@ -70,10 +71,10 @@ Pizza Order                                   (Model)
     │   ├── Email Address                     REUSE  Default library
     │   └── US Address                        REUSE  Default library cluster
     ├── Pizza                                 (Group, new)
-    │   ├── Size                              NEW    Code: small, medium, large
+    │   ├── Size                              NEW    Integer, inches, 8 to 18, units REUSE "Length/Distance (SI - Metric)"
     │   ├── Crust                             NEW    Code: thin, hand-tossed, deep-dish
+    │   ├── Heat                              NEW    Ranked: mild, medium, hot
     │   ├── Toppings                          NEW    List of Codes, bound to pizza.owl
-    │   ├── Diameter                          NEW    Decimal, units REUSE "Length/Distance (SI - Metric)"
     │   ├── Vegetarian                        REUSE  "Yes/No Indicator"
     │   └── Quantity                          NEW    Integer, 1 to 10
     ├── Order Time                            REUSE  "DateTime"
@@ -84,6 +85,13 @@ Pizza Order                                   (Model)
 
 Fourteen leaves and two groups. **Seven reused, seven new.** The reuse ratio is the lesson and
 it is also what keeps the bill small.
+
+Why Size is a number and Heat is the Ranked field (Tim, 2026-10-03): the size of a pizza is its
+diameter, and a word for it that stands for a number is a mapping the menu can change, which
+chapter two (section 11) treats as the rule it is. Heat is genuinely ordered and has no number
+behind it, so it carries the Ordinal lesson, beside Toppings as the Code list: the two kinds a
+domain expert most often confuses, side by side. Cheeses and sauces would be Code lists, not
+Ordinals; nothing orders mozzarella before provolone.
 
 ### Verified against production (backup of 14 September 2026)
 
@@ -167,15 +175,21 @@ Times are targets for a first-time user reading as they go. The tutorial prints 
 |---|---|---|---|---|
 | 0 | both | Register, fund $10, copy API key, create project `Pizzeria`, install SDCBench, sign in | 15 min | 0:15 |
 | 1 | expert | Set "Building in" to `Pizzeria`, "Search in" to `Default`. Reuse: drag the seven published components into place. Make the `Customer` and `Pizza` groups | 15 min | 0:30 |
-| 2 | expert | Sketch the seven new fields with types; write a requirement on each (the tutorial supplies model text for each, and asks the user to write one of their own) | 15 min | 0:45 |
+| 2 | expert | Sketch the seven new fields with types (Size an Integer with the length units dropped onto it; Heat a Ranked field); write a requirement on each (the tutorial supplies model text for each, and asks the user to write one of their own) | 15 min | 0:45 |
 | 3 | expert | Save draft locally. Create draft model. Open SDCStudio and find it in `Pizzeria` | 5 min | 0:50 |
-| 4 | modeler | Finish the seven new components from their requirements: codes for Size and Crust; codes plus semantic binding for Toppings (pizza.owl IRIs); units for Diameter and Bake Temperature; length limit for Special Instructions; range for Quantity. Save and Publish each | 30 min | 1:20 |
+| 4 | modeler | Finish the seven new components from their requirements: a range of 8 to 18 for Size, its units already reused; codes for Crust; the ordered list mild, medium, hot for Heat; codes plus semantic binding for Toppings (pizza.owl IRIs); units for Bake Temperature; length limit for Special Instructions; range for Quantity. Save and Publish each | 30 min | 1:20 |
 | 5 | modeler | Publish the two groups, then the model. Generate Package (one time). Look at the XSD and the generated XML instance | 10 min | 1:30 |
 | 6 | either | Generate App, download, `docker compose up --build`, create the superuser, open `localhost:8000` | 15 min | 1:45 |
 | 7 | either | Enter three orders. See the list and detail pages. Generate one XML instance from SDCStudio and validate it. Optional: sign it | 10 min | 1:55 |
 | 8 | | What you built, what it cost, where the reuse came from, and what to do next | 5 min | 2:00 |
 
 Step 4 is the long pole and the one most likely to blow the budget. FR-4 addresses it.
+
+**The built-in tutorial.** Since 4.0.0-beta.3 the bench opens on a nine-move tutorial that is
+steps 1 to 3 on a smaller model: name the model, find and reuse `Full Name (Person)`, make the
+`Pizza` group, sketch `Size` as an Integer, describe it, drop the length units onto it, describe
+the model, send. It ends at the cost card. The written tutorial picks up from there with the full
+model; a learner who has played the built-in one has already done the bench half once.
 
 ## 7. Functional requirements (for the tutorial as a product)
 
@@ -227,10 +241,9 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 3. **Group minting cost.** **Settled: Clusters are billed.** The budget in section 5 already
    assumes 100 credits per new group. The price list should say so; that is a docs fix in
    SDCStudio, not a tutorial question.
-4. **Which SDCBench version does the tutorial target?** 4.0.0-beta.2 is current. If the party,
-   participation and attestation work lands before the tutorial ships, the model gains nothing
-   from them and the screenshots change. Suggest pinning to the beta that exists and retaking
-   screenshots per FR-2 when the next release lands.
+4. **Which SDCBench version does the tutorial target?** **Settled: 4.0.0-beta.4** (the visual
+   refresh, tablet-first, with the built-in tutorial; 2026-10-02). The party, participation and
+   attestation work was withdrawn from scope on 2026-10-02, so nothing is waiting on it.
 5. **Where does it live publicly?** **Settled:** `pizza_tutorial/` at the repo root is the
    source (FR-1). Rendered copies on semanticdatacharter.com (the on-ramp) and inside SDCBench
    Help (offline). The axius-sdc.com practitioner pages should link to it, not copy it.
@@ -238,10 +251,12 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
    now.** The connected blocks on the canvas are the visualization of the model, and the
    generated app's pages are the view of the data. Charts would be an AppGen change and are
    not in this tutorial.
-7. **Sequel order.** Candidates: the FHIR variant (Beale's demo priority), the CordovaOS graph
-   tutorial (starts from the generated app's data), and the multi-model project (two models
-   sharing the `Customer` group). Recommendation: FHIR variant second, because it reuses this
-   tutorial's shape with a different library and serves the demo audience.
+7. **Sequel order.** Candidates: chapter two (section 11, a rule in the schema), the FHIR
+   variant (Beale's demo priority), the CordovaOS graph tutorial (starts from the generated
+   app's data), and the multi-model project (two models sharing the `Customer` group).
+   Recommendation: chapter two first, because it reuses everything chapter one built and takes
+   forty minutes; the FHIR variant after it, because it reuses the shape with a different
+   library and serves the demo audience.
 
 ## 9. Acceptance criteria
 
@@ -257,9 +272,9 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 ## 10. Deliverables and order of work
 
 0. **A usability and visual review of SDCBench itself, before any tutorial work** (Tim,
-   2026-09-14). The tutorial will put the bench in front of new users for the first time;
-   anything that would embarrass it should be fixed first, and the review is cheaper before
-   the screenshots exist. Findings and fixes are tracked outside this PRD.
+   2026-09-14). **Done:** pass one on 2026-09-14 (`docs/UX-REVIEW-2026-09-14.md`), pass two
+   and the refresh on 2026-10-02 (`docs/VISUAL-REVIEW-2026-10-02.md`), shipped as beta.3 and
+   beta.4 with the built-in tutorial.
 1. This PRD, agreed.
 2. Build the model ourselves end to end, timing each step and recording the credits. The
    numbers in section 6 are targets; the run replaces them with measurements.
@@ -267,3 +282,43 @@ Step 4 is the long pole and the one most likely to blow the budget. FR-4 address
 4. The eight step files and the index, with screenshots.
 5. The Help overlay and semanticdatacharter.com rendering.
 6. The three-user test (section 9), then revision, then publication and the announcement.
+
+## 11. Chapter two: a rule in the schema
+
+**Not in the two-hour bar.** A forty-minute sequel for the learner who finished chapter one,
+built on its published components, teaching one thing: a rule that lives in the schema is
+enforced by every validator, forever, and nobody has to remember it.
+
+**The scenario.** The pizzeria's menu says a small is 10 inches, a medium 14, a large 18. The
+order form should refuse an order that says "small, 14 inches".
+
+**The model.** `Size` becomes a Group holding two leaves: `Size Name`, a Ranked field (small,
+medium, large), and the chapter-one `Size` reused as the diameter. The Group carries an
+assertion, written by the modeler in SDCStudio from the bench's requirement, that the pair
+agree:
+
+```
+(Size Name = 'small' and Size = 10) or (Size Name = 'medium' and Size = 14) or (Size Name = 'large' and Size = 18)
+```
+
+**What it teaches, in order.**
+
+1. The bench half: the domain expert writes the mapping as the Group's requirement in plain
+   words. The bench cannot write the rule, and the tutorial says why: the rule is the
+   modeler's, the words are the expert's.
+2. The modeler half: the assertion on the Cluster in SDCStudio (the same mechanism a retailer
+   profile uses to require its fields: the Business Documents library's Torvale Order). Publish.
+3. The proof: generate an instance, change the diameter to 14 under "small", validate; the
+   validator names the Group and the rule. Nothing in the application had to know the menu.
+4. The honest limit: an assertion validates, it does not select. XSD 1.1 computes nothing, so
+   the form still takes both values and the schema refuses a pair that disagrees. And the
+   mapping is now in a published, immutable schema: when the menu changes, the model is
+   revised, and every record made under the old menu still validates against the schema it
+   was made under. That is the anchor-not-delta argument in one pizza.
+
+**Cost.** One new Group and one new Ranked field, 200 credits; the model revised, 500. Under
+a thousand with validation. Reuses chapter one's account, project and generated app.
+
+**Decisions taken, 2026-10-03 (Tim).** Size is the diameter; the small, medium, large list is
+not in chapter one; Heat carries the Ordinal lesson; the Size cluster with the assertion is
+chapter two, not a variant of chapter one.
