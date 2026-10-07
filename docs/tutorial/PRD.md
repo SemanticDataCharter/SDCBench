@@ -1,5 +1,7 @@
 # SDCBench Tutorial PRD: "The Pizza Order"
 
+*Terminology: a **Governed Data Record** is one record of data, validated against a published Semantic Data Charter model, carrying its own definitions, provenance and governance. Its canonical serialization is an XML instance; the tutorial shows that XML when the learner looks at the record itself.*
+
 **Status:** Draft 2, 2026-10-03. Draft 1 (2026-09-14) had three of the open questions settled by Tim the same day; see section 8. The usability and visual review of SDCBench that paused the tutorial has shipped (4.0.0-beta.3 and beta.4, 2026-10-02), and the bench now carries a nine-move built-in tutorial that is steps 1 to 3 of this one on a smaller model. **Draft 2 changes (Tim, 2026-10-03):** Size is the diameter, an Integer in inches with reused units; the small, medium, large list is gone from chapter one; the Ordinal lesson moves to Heat; the Size cluster with an assert becomes chapter two (section 11). Written from the 11 September strategy session
 with Thomas Beale, where the participants agreed on a step-by-step, pizza-ontology-style
 tutorial for SDCBench and a two-hour onboarding bar: a new user authors a model, builds a
@@ -125,7 +127,7 @@ for readers coming from openEHR, and then stops using openEHR words.
 ## 4. Non-goals (explicitly out)
 
 - **No CordovaOS, no GraphDB, no SPARQL.** "Visualize data" in the two-hour bar means the
-  generated application's list and detail pages plus one generated XML instance. The graph
+  generated application's list and detail pages plus one generated Governed Data Record (shown as its XML). The graph
   story is a separate tutorial that starts where this one ends.
 - **No FHIR.** Beale's FHIR-first recommendation is for demonstrations to healthcare buyers.
   This tutorial is for the first hour of any user; a FHIR variant (same shape, FHIR Clinical
@@ -156,8 +158,8 @@ for readers coming from openEHR, and then stops using openEHR words.
 | Mint new component | 100 | 7 fields + 3 groups (Customer, Pizza, and the pre-seeded root group, which is billed too) = 10 | 1,000 |
 | Assemble model | 500 | 1 | 500 |
 | Download generated app | 1,500 | 1 | 1,500 |
-| Validate an XML instance | 1 | up to 5 | 5 |
-| Sign an instance (optional last step) | 5 | 1 | 5 |
+| Validate a Governed Data Record (its XML) | 1 | up to 5 | 5 |
+| Sign a Governed Data Record (optional last step) | 5 | 1 | 5 |
 | **Total** | | | **about 3,000** |
 
 Reuse is free. A $10 wallet covers the tutorial three times over, which matters: a learner who
@@ -178,9 +180,9 @@ Times are targets for a first-time user reading as they go. The tutorial prints 
 | 2 | expert | Sketch the seven new fields with types (Size an Integer with the length units dropped onto it; Heat a Ranked field); write a requirement on each (the tutorial supplies model text for each, and asks the user to write one of their own) | 15 min | 0:45 |
 | 3 | expert | Save draft locally. Create draft model. Open SDCStudio and find it in `Pizzeria` | 5 min | 0:50 |
 | 4 | modeler | Finish the seven new components from their requirements: a range of 8 to 18 for Size, its units already reused; codes for Crust; the ordered list mild, medium, hot for Heat; codes plus semantic binding for Toppings (pizza.owl IRIs); units for Bake Temperature; length limit for Special Instructions; range for Quantity. Save and Publish each | 30 min | 1:20 |
-| 5 | modeler | Publish the two groups, then the model. Generate Package (one time). Look at the XSD and the generated XML instance | 10 min | 1:30 |
+| 5 | modeler | Publish the two groups, then the model. Generate Package (one time). Look at the XSD and a generated Governed Data Record (its XML instance) | 10 min | 1:30 |
 | 6 | either | Generate App, download, `docker compose up --build`, create the superuser, open `localhost:8000` | 15 min | 1:45 |
-| 7 | either | Enter three orders. See the list and detail pages. Generate one XML instance from SDCStudio and validate it. Optional: sign it | 10 min | 1:55 |
+| 7 | either | Enter three orders. See the list and detail pages. Generate one Governed Data Record from SDCStudio and validate it. Optional: sign it | 10 min | 1:55 |
 | 8 | | What you built, what it cost, where the reuse came from, and what to do next | 5 min | 2:00 |
 
 Step 4 is the long pole and the one most likely to blow the budget. FR-4 addresses it.
@@ -308,7 +310,7 @@ agree:
    modeler's, the words are the expert's.
 2. The modeler half: the assertion on the Cluster in SDCStudio (the same mechanism a retailer
    profile uses to require its fields: the Business Documents library's Torvale Order). Publish.
-3. The proof: generate an instance, change the diameter to 14 under "small", validate; the
+3. The proof: generate a Governed Data Record, change the diameter to 14 under "small", validate; the
    validator names the Group and the rule. Nothing in the application had to know the menu.
 4. The honest limit: an assertion validates, it does not select. XSD 1.1 computes nothing, so
    the form still takes both values and the schema refuses a pair that disagrees. And the
