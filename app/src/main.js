@@ -21,7 +21,7 @@ const fmtCredits = (n) => Number(n).toLocaleString('en-US')
 import guideMd from '../../docs/USER-GUIDE.md?raw'
 import { initTutorial, startTutorial, tutorialDone, tutorialResumeStep } from './tutorial.js'
 
-const VERSION = '4.0.0b4'
+const VERSION = '4.0.0b5'
 
 const $ = (id) => document.getElementById(id)
 // Review hooks, only with ?mock: scripted drives of the board from the browser console.
