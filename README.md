@@ -1,107 +1,16 @@
-# SDCBench
+# SDCBench is now part of SDCStudio
 
-**SDCBench** is a desktop tool for **diagramming a data model** and handing it to a
-data modeler to finish in [SDCStudio](https://sdcstudio.axius-sdc.com). A domain
-expert reuses published components that already *mean* what their data means,
-sketches a new one only when needed, and says in plain language what each piece is,
-without ever learning the underlying [Semantic Data Charter](https://semanticdatacharter.com)
-reference model.
+SDCBench is now **the Bench**, a page in [SDCStudio](https://sdcstudio.axius-sdc.com).
+It is the same canvas: reuse published components, sketch new ones with a plain-language
+requirement, and hand the model to a data modeler. Now your team's drafts and the
+modeler's work are in one place.
 
-## What it does
+- **Using the Bench:** the [Bench guide](https://axius-sdc.com/docs/user-guides/bench.html).
+- **The composition model and its generator:** now in the
+  [SDCRM repository](https://github.com/SemanticDataCharter/SDCRM), under
+  [`tools/composition/`](https://github.com/SemanticDataCharter/SDCRM/tree/main/tools/composition),
+  with its documentation in
+  [`docs/COMPOSITION-MODEL.md`](https://github.com/SemanticDataCharter/SDCRM/blob/main/docs/COMPOSITION-MODEL.md).
 
-You sign in with your SDCStudio API key, then:
-
-- **Search the published library** and **reuse** components by dragging them onto a
-  canvas (reuse is the default, and the cheap path).
-- **Assemble** them into a document tree (Model → Group → Fields) on a Google Blockly
-  canvas, where blocks only snap where the reference model allows.
-- **Sketch a new component** only when nothing fits: pick a plain data type (Text,
-  Integer, Decimal, Date, Code, …) and write a plain-language **requirement**.
-- **Start the tutorial**: nine guided moves that build a small model, the next move lit.
-- **Send to SDCStudio**: it creates a draft data model in your project, referencing
-  reused components and creating new ones as drafts.
-
-A data modeler then finalizes the constraints, units, reference ranges, and semantic
-bindings, and publishes, in SDCStudio.
-
-## What it looks like
-
-| The welcome, with the tutorial | A model, reused pieces and sketched ones |
-|---|---|
-| ![The empty board: the mark, the first two moves, the tutorial's button](docs/review/2026-10-02/desktop-welcome-thumb.png) | ![The pizza order on the board, the panel's three cards](docs/review/2026-10-02/desktop-model-thumb.png) |
-
-Light by default, dark with the system setting; one layout from an iPad in portrait to a
-desktop. The full set of states is in `docs/review/2026-10-02/`. The **tutorial** builds the
-pizza order in nine moves with the next move lit, and is the fastest way in.
-
-## The separation line
-
-| | SDCBench (domain expert) | SDCStudio (data modeler) |
-|---|---|---|
-| Does | reuse published components, sketch new ones, structure the tree, **state requirements in plain language** | constraints, units, reference ranges, semantic binding, **publish** |
-| Produces | a draft model (reuse by `ct_id` + new drafts) with per-component requirements | the finished, published model |
-
-## Requirements
-
-- An **SDCStudio account** and API key (create one from the sign-in screen).
-- A running [SDCStudio](https://sdcstudio.axius-sdc.com) instance (the public one by
-  default; configurable via `SDCSTUDIO_BASE_URL`).
-
-## Build and run
-
-SDCBench is a [Tauri](https://tauri.app/) app (Rust core + a Vite/vanilla-JS
-frontend). You need [Rust](https://rustup.rs/) and [Node.js](https://nodejs.org/).
-
-```bash
-cd app
-npm install
-npx tauri dev      # run in development
-npx tauri build    # build a release bundle (Linux AppImage)
-```
-
-- **Windows:** see [`docs/BUILDING-WINDOWS.md`](docs/BUILDING-WINDOWS.md).
-- macOS is not yet supported.
-
-CI (GitHub Actions) builds the Linux AppImage and a Windows installer on tags.
-See [`docs/CI-SIGNING.md`](docs/CI-SIGNING.md) for Windows code signing.
-
-### Releasing
-
-**Two steps, and merging alone ships nothing.** `build.yml` triggers on a
-**tag**, not on a push to `main`. A merge with no tag looks like a finished
-release and produces no artifacts.
-
-The version lives in one file, `VERSION`. Seven other places show it (package
-and lock, Cargo manifest and lock, the Tauri config and window title, and the
-two frontend constants), and a script writes all of them:
-
-```bash
-python3 tools/set_version.py 4.0.0-beta.3   # writes VERSION and every derived place
-python3 tools/set_version.py --check        # what CI runs: exit 1 on any disagreement
-```
-
-Then:
-
-```bash
-git checkout main && git pull
-git tag -a v4.0.0-beta.3 -m "4.0.0-beta.3"   # must equal VERSION; CI refuses otherwise
-git push origin v4.0.0-beta.3
-```
-
-CI runs the canon tests and the version check on every pull request. On a tag it
-also refuses a tag that does not equal `VERSION` or is not on `main`, then builds
-both targets and publishes a GitHub Release with the AppImage and the Windows
-installer attached. Expect roughly twelve minutes: Rust compiles for each target,
-and Windows finishes well after Linux.
-
-## Documentation
-
-- [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) — the end-to-end walkthrough (also in-app
-  via the **Help** button).
-- [`docs/COMPOSITION-MODEL.md`](docs/COMPOSITION-MODEL.md) — how the canvas's
-  drop-validity is derived from the reference model.
-- [`docs/PHASE-2-PRD.md`](docs/PHASE-2-PRD.md) — the product design.
-
-## License
-
-Apache License 2.0. Copyright 2026 Axius SDC, Inc. See [`LICENSE`](LICENSE).
+This repository is archived and read-only. Its code and releases stay here for reference
+under the Apache License 2.0.
